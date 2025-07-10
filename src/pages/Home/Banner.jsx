@@ -6,6 +6,7 @@ import img3 from '../../assets/banner/banner3.jpg'
 import img4 from '../../assets/banner/banner4.jpg'
 import img5 from '../../assets/banner/banner5.jpg'
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
+import { Link } from 'react-router';
 
 const Banner = () => {
   const banners = [
@@ -67,9 +68,9 @@ const Banner = () => {
               <p className="text-white mt-2 text-sm md:text-lg max-w-xl drop-shadow">
                 {banner.desc}
               </p>
-              <button className="mt-4 px-6 py-2 bg-primary text-white rounded hover:bg-primary/90 transition">
+              <Link to='/all-scholarships'><button className="mt-4 px-6 py-2 bg-primary text-white rounded hover:bg-primary/90 transition">
                 Explore Scholarships
-              </button>
+              </button></Link>
             </div>
           </div>
         ))}

@@ -2,7 +2,7 @@ import { createBrowserRouter, RouterProvider } from "react-router";
 import PageNotFound from "../pages/Error/PageNotFound";
 import Root from "../layouts/Root";
 import Home from "../pages/Home/Home";
-import AllScholarship from "../pages/Scholarship/AllScholarships";
+import AllScholarship from "../pages/Scholarships/AllScholarships";
 export const router = createBrowserRouter([
   {
     path: "/",

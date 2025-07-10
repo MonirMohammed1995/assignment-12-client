@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { LogOut, Sun, Moon, Menu } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../../context/AuthProvider';
+import logo from '../../assets/images/logo.png'
 
 const Navbar = () => {
   const { user, logout, role, theme, setTheme } = useContext(AuthContext);
@@ -55,7 +56,7 @@ const Navbar = () => {
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-base-100 shadow-md' : 'bg-transparent'}`}>
       <nav className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
-        <Link to={logoLink} className="text-2xl font-bold text-primary">🎓 ScholarSys</Link>
+        <Link to={logoLink} className="text-2xl font-bold text-primary flex justify-center items-center"><img src={logo} alt="Logo" className='w-16'/> ScholarTrack</Link>
 
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-6">

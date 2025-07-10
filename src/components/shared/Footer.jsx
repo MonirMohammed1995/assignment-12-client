@@ -1,12 +1,13 @@
 import { Facebook, Linkedin, Twitter } from 'lucide-react';
+import logo from '../../assets/images/logo.png'
 
 const Footer = () => {
   return (
-    <footer className="bg-base-200 text-base-content mt-12">
+    <footer className="bg-base-200 text-base-content">
       <div className="footer max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Branding */}
         <div>
-          <span className="text-xl font-bold">ScholarSys 🎓</span>
+          <span className="text-xl font-bold flex justify-center items-center"><img src={logo} alt="Logo" className='w-12'/> ScholarTrack</span>
           <p className="text-sm mt-2">Empowering students with the best scholarships globally.</p>
         </div>
 
@@ -15,7 +16,6 @@ const Footer = () => {
           <span className="footer-title">Quick Links</span>
           <a href="/" className="link link-hover">Home</a>
           <a href="/all-scholarships" className="link link-hover">All Scholarships</a>
-          <a href="/login" className="link link-hover">Login</a>
         </div>
 
         {/* Socials */}
