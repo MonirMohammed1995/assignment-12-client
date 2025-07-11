@@ -1,5 +1,5 @@
 import { Facebook, Linkedin, Twitter } from 'lucide-react';
-import logo from '../../assets/images/logo.png'
+import logo from '../../assets/images/logo.png';
 
 const Footer = () => {
   return (
@@ -7,7 +7,7 @@ const Footer = () => {
       <div className="footer max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Branding */}
         <div>
-          <span className="text-xl font-bold flex justify-center items-center"><img src={logo} alt="Logo" className='w-12'/> ScholarTrack</span>
+          <span className="text-xl font-bold flex items-center"><img src={logo} alt="Logo" className='w-12 mr-2'/> ScholarTrack</span>
           <p className="text-sm mt-2">Empowering students with the best scholarships globally.</p>
         </div>
 
@@ -35,7 +35,7 @@ const Footer = () => {
         </div>
       </div>
       <div className="text-center text-sm py-4 border-t">
-        © {new Date().getFullYear()} ScholarSys. All rights reserved.
+        © {new Date().getFullYear()} ScholarTrack. All rights reserved.
       </div>
     </footer>
   );

@@ -16,7 +16,7 @@ export const router = createBrowserRouter([
       {
         path:'/all-scholarships',
         element:<AllScholarship/>
-      }
+      },
     ]
   },
 ]);
