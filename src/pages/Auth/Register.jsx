@@ -1,8 +1,13 @@
 import React, { useState } from "react";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
 import { auth } from "../../firebase/firebase.config";
 import Swal from "sweetalert2";
-import { FaEnvelope, FaLock, FaUser } from "react-icons/fa";
+import { FaEnvelope, FaLock, FaUser, FaGoogle } from "react-icons/fa";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -11,12 +16,19 @@ const Register = () => {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // ---------------------------
+  // Email / Password Register
+  // ---------------------------
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Create user
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // Create user with email & password
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
       // Update display name
       await updateProfile(userCredential.user, { displayName: name });
@@ -32,14 +44,31 @@ const Register = () => {
     }
   };
 
+  // ---------------------------
+  // Google Sign‑In
+  // ---------------------------
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      Swal.fire("Success!", "Logged in with Google", "success");
+    } catch (error) {
+      Swal.fire("Error", error.message, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-r from-indigo-100 to-blue-200 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-10">
+    <div className="min-h-screen bg-gradient-to-r from-indigo-100 to-blue-200 flex items-center justify-center px-4 py-8">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-10">
         <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-8">
           Create Account
         </h2>
 
-        <form onSubmit={handleRegister} className="space-y-6">
+        {/* Email / Password Form */}
+        <form onSubmit={handleRegister} className="space-y-6 text-gray-700">
           {/* Name */}
           <div className="relative">
             <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -93,11 +122,29 @@ const Register = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl shadow-md hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full bg-blue-500 text-white font-semibold py-3 rounded-xl shadow-md hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? "Creating account..." : "Register"}
           </button>
         </form>
+
+        {/* Divider */}
+        <div className="flex items-center my-6">
+          <span className="h-px flex-1 bg-gray-300" />
+          <span className="px-4 text-sm text-gray-500">or</span>
+          <span className="h-px flex-1 bg-gray-300" />
+        </div>
+
+        {/* Google Sign‑In Button */}
+        <button
+          type="button"
+          onClick={handleGoogleSignIn}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 rounded-xl hover:bg-gray-100 transition disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          <FaGoogle className="text-xl text-gray-600" />
+          <span className="text-gray-700">Continue with Google</span>
+        </button>
 
         <div className="text-center mt-6 text-sm text-gray-600">
           Already have an account?{" "}

@@ -59,7 +59,7 @@ const Navbar = () => {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-6">
-          <div className="flex gap-5 items-center text-sm">{navLinks}</div>
+          <div className="flex gap-3 items-center text-sm">{navLinks}</div>
           <button onClick={toggleTheme} className="btn btn-ghost btn-sm">
             {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
