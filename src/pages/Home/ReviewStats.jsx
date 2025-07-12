@@ -44,7 +44,7 @@ const ReviewStats = () => {
   return (
     <section className="bg-base-100 py-20 border-t" ref={ref}>
       <div className="max-w-7xl mx-auto px-4 md:px-6 text-center">
-        <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">Our Trusted Impact</h2>
+        <h2 className="text-3xl md:text-4xl font-bold text-blue-500 mb-4">Our Trusted Impact</h2>
         <p className="text-gray-600 max-w-2xl mx-auto mb-12">
           ScholarSys continues to empower thousands of learners worldwide — here’s how we’ve made a difference.
         </p>
@@ -56,7 +56,7 @@ const ReviewStats = () => {
               className="flex flex-col items-center justify-center px-4 py-6 bg-white shadow-md rounded-xl transition hover:shadow-lg"
             >
               <div className="mb-3">
-                <Icon size={36} className={`${isRating ? 'text-yellow-400' : 'text-primary'}`} />
+                <Icon size={36} className={`${isRating ? 'text-yellow-400' : 'text-blue-500'}`} />
               </div>
               <h3 className="text-3xl font-extrabold text-gray-900">
                 <CountUp

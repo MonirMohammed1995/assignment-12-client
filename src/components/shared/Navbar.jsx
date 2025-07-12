@@ -34,16 +34,16 @@ const Navbar = () => {
 
   const navLinks = (
     <>
-      <NavLink to="/" className={({ isActive }) => isActive ? "text-primary font-semibold" : "hover:text-primary transition"}>Home</NavLink>
-      <NavLink to="/all-scholarships" className={({ isActive }) => isActive ? "text-primary font-semibold" : "hover:text-primary transition"}>All Scholarships</NavLink>
+      <NavLink to="/" className={({ isActive }) => isActive ? "text-white bg-blue-400 font-semibold p-2 px-2 rounded-lg" : "hover:text-blue-400 transition"}>Home</NavLink>
+      <NavLink to="/all-scholarships" className={({ isActive }) => isActive ? "text-white bg-blue-400 font-semibold p-2 px-2 rounded-lg" : "hover:text-blue-400 transition"}>All Scholarships</NavLink>
       {user && role === 'user' && (
-        <NavLink to="/dashboard/user" className={({ isActive }) => isActive ? "text-primary font-semibold" : "hover:text-primary transition"}>Dashboard</NavLink>
+        <NavLink to="/dashboard/user" className={({ isActive }) => isActive ? "text-white bg-blue-400 font-semibold p-2 px-2 rounded-lg" : "hover:text-blue-400 transition"}>Dashboard</NavLink>
       )}
       {user && role === 'admin' && (
-        <NavLink to="/dashboard/admin" className={({ isActive }) => isActive ? "text-primary font-semibold" : "hover:text-primary transition"}>Admin Panel</NavLink>
+        <NavLink to="/dashboard/admin" className={({ isActive }) => isActive ? "text-white bg-blue-400 font-semibold p-2 px-2 rounded-lg" : "hover:text-blue-400 transition"}>Admin Panel</NavLink>
       )}
       {user && role === 'moderator' && (
-        <NavLink to="/dashboard/moderator" className={({ isActive }) => isActive ? "text-primary font-semibold" : "hover:text-primary transition"}>Moderator</NavLink>
+        <NavLink to="/dashboard/moderator" className={({ isActive }) => isActive ? "text-white bg-blue-400 font-semibold p-2 px-2 rounded-lg" : "hover:text-blue-400 transition"}>Moderator</NavLink>
       )}
     </>
   );
@@ -54,7 +54,7 @@ const Navbar = () => {
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-base-100 shadow-md' : 'bg-transparent'}`}>
       <nav className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         <Link to={logoLink} className="text-2xl font-bold text-primary flex items-center">
-          <img src={logo} alt="Logo" className='w-12 mr-2' /> ScholarTrack
+          <img src={logo} alt="Logo" className='w-12 mr-2' /> <span className='text-blue-400'>Scholar<span className='text-purple-300'>Track</span></span>
         </Link>
 
         {/* Desktop Menu */}
@@ -72,7 +72,10 @@ const Navbar = () => {
               </button>
             </div>
           ) : (
-            <Link to="/login" className="btn btn-sm btn-primary text-white">Login</Link>
+            <div className='flex gap-2'>
+              <Link to="login" className="btn btn-md shadow-md bg-blue-400 hover:bg-blue-500 border-none text-white">Login</Link>
+              <Link to="register" className="btn btn-md shadow-md bg-purple-400 hover:bg-purple-500 border-none text-white">Register</Link>
+            </div>
           )}
         </div>
 
@@ -90,7 +93,10 @@ const Navbar = () => {
                 <li><button onClick={handleLogout} className="btn btn-sm btn-error w-full">Logout</button></li>
               </>
             ) : (
-              <li><Link to="/login" className="btn btn-sm btn-primary w-full">Login</Link></li>
+              <div>
+                <li><Link to="login" className="btn btn-md shadow-md bg-blue-400 text-white hover:bg-blue-500 w-full">Login</Link></li>
+                <li><Link to="register" className="btn btn-md shadow-md bg-purple-400 text-white hover:bg-purple-500 w-full">Register</Link></li>
+              </div>
             )}
           </ul>
         </div>

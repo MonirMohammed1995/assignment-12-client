@@ -68,7 +68,7 @@ const Banner = () => {
               <p className="text-white mt-2 text-sm md:text-lg max-w-xl drop-shadow">
                 {banner.desc}
               </p>
-              <Link to='/all-scholarships'><button className="mt-4 px-6 py-2 bg-primary text-white rounded hover:bg-primary/90 transition">
+              <Link to='/all-scholarships'><button className="mt-4 px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition">
                 Explore Scholarships
               </button></Link>
             </div>

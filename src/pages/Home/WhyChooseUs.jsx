@@ -27,7 +27,7 @@ const WhyChooseUs = () => {
   return (
     <section className="py-20 bg-base-100">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
-        <h2 className="text-3xl md:text-4xl font-bold text-center text-primary mb-4">Why Choose ScholarSys?</h2>
+        <h2 className="text-3xl md:text-4xl font-bold text-center text-blue-500 mb-4">Why Choose ScholarSys?</h2>
         <p className="text-center text-gray-600 max-w-2xl mx-auto mb-12">
           We simplify the scholarship process with cutting-edge tools, expert curation, and a student-first approach.
         </p>
@@ -38,7 +38,7 @@ const WhyChooseUs = () => {
               key={i}
               className="bg-white rounded-xl shadow-sm hover:shadow-md transition p-6 text-center flex flex-col items-center"
             >
-              <Icon size={36} className="text-primary mb-4" />
+              <Icon size={36} className="text-blue-500 mb-4" />
               <h4 className="text-lg font-semibold mb-2">{title}</h4>
               <p className="text-sm text-gray-500">{desc}</p>
             </div>
