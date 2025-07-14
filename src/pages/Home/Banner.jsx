@@ -43,7 +43,7 @@ const Banner = () => {
   ];
 
   return (
-    <div className="pt-16">
+    <div className="pt-16 rounded-2xl">
       <Carousel
         autoPlay
         infiniteLoop
@@ -55,13 +55,13 @@ const Banner = () => {
         emulateTouch
       >
         {banners.map((banner) => (
-          <div key={banner.id} className="relative">
+          <div key={banner.id} className="relative rounded-2xl">
             <img
               src={banner.img}
               alt={banner.title}
-              className="w-full h-[300px] md:h-[500px] object-cover"
+              className="w-full h-[300px] md:h-[500px] object-cover rounded-2xl"
             />
-            <div className="hero hero-overlay absolute inset-0 bg-opacity-40 flex flex-col justify-center items-center text-center px-4">
+            <div className="hero hero-overlay absolute inset-0 bg-opacity-40 flex flex-col justify-center items-center text-center px-4 rounded-2xl">
               <h2 className="text-white text-2xl md:text-4xl font-bold drop-shadow-lg">
                 {banner.title}
               </h2>

@@ -1,23 +1,13 @@
-import { useContext } from "react";
-import { Navigate, useLocation } from "react-router-dom";
-import { AuthContext } from "../context/AuthProvider";
-import Loader from "../components/shared/Loader";
+import { Navigate, useLocation } from 'react-router-dom';
+import useAuth from '../hooks/useAuth';
 
 const PrivateRoute = ({ children }) => {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading } = useAuth();
   const location = useLocation();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex justify-center items-center">
-        <Loader/>
-      </div>
-    );
-  }
+  if (loading) return <p className="text-center mt-10">Loading...</p>;
 
-  if (user) {
-    return children;
-  }
+  if (user) return children;
 
   return <Navigate to="login" state={{ from: location }} replace />;
 };

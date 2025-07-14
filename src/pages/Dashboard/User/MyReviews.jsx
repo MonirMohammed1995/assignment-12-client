@@ -52,8 +52,8 @@ const MyReviews = () => {
       comment: form.comment.value,
       date: form.date.value,
     };
-
-    fetch(`https://your-api-url.com/reviews/${editingReview._id}`, {
+    const api = import.meta.env.VITE_API_URL
+    fetch(`${api}reviews/${editingReview._id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedReview),

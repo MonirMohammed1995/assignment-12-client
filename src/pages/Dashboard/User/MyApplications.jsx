@@ -10,7 +10,8 @@ const MyApplications = () => {
 
   useEffect(() => {
     if (user?.email) {
-      fetch(`https://your-api-url.com/applications?email=${user.email}`)
+      const api = import.meta.env.VITE_API_URL
+      fetch(`${api}applications?email=${user.email}`)
         .then(res => res.json())
         .then(data => {
           setApplications(data);
@@ -28,7 +29,8 @@ const MyApplications = () => {
       confirmButtonText: 'Yes, cancel it!',
     }).then((result) => {
       if (result.isConfirmed) {
-        fetch(`https://your-api-url.com/applications/${id}`, {
+        const api = import.meta.env.VITE_API_URL
+        fetch(`${api}${id}`, {
           method: 'DELETE',
         })
           .then(res => res.json())

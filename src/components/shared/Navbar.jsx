@@ -1,12 +1,12 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { LogOut, Sun, Moon, Menu } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { AuthContext } from '../../context/AuthProvider';
 import logo from '../../assets/images/logo.png';
+import useAuth from '../../hooks/useAuth';
 
 const Navbar = () => {
-  const { user, logout, role, theme, setTheme } = useContext(AuthContext);
+  const { user, logout, role, theme, setTheme } = useAuth();
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
 
