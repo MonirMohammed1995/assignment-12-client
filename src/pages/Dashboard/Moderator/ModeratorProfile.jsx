@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ModProfile = () => {
+const ModeratorProfile = () => {
     return (
         <div>
             Moderator Profile
@@ -8,4 +8,4 @@ const ModProfile = () => {
     );
 };
 
-export default ModProfile;
+export default ModeratorProfile;

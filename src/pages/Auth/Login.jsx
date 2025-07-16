@@ -1,50 +1,31 @@
-// src/pages/Auth/Login.jsx
-import { useState } from 'react';
-import {
-  GoogleAuthProvider,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-} from 'firebase/auth';
+import React, { useState } from 'react';
 import { FaEnvelope, FaLock, FaGoogle } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { app } from '../../firebase/firebase.config';
 
-import useAuth from '../../hooks/useAuth'; // ✅
+const auth = getAuth(app); // Firebase auth instance
+const googleProvider = new GoogleAuthProvider();
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [form, setForm] = useState({ email: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { auth, setRole } = useAuth();     // ✅ auth from context
   const navigate = useNavigate();
   const location = useLocation();
-  const redirectPath = location.state?.from?.pathname || '/';
+  const redirectPath = location.state?.from?.pathname || '/dashboard';
 
-  // fetch role → setRole → redirect
-  const resolveRoleAndRedirect = async (userEmail) => {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/users/${userEmail}`
-      );
-      const { role = 'user' } = await res.json();
-      setRole(role);
-      navigate(`/dashboard/${role}`, { replace: true });
-      Swal.fire('Success 🎉', 'Logged in successfully', 'success');
-    } catch (err) {
-      console.error(err);
-      Swal.fire('Error', 'Could not fetch user role', 'error');
-    }
-  };
+  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
-  // email/password login
-  const handleEmailLogin = async (e) => {
+  const handleEmailLogin = async e => {
     e.preventDefault();
     setLoading(true);
     try {
-      const cred = await signInWithEmailAndPassword(auth, email, password);
-      await resolveRoleAndRedirect(cred.user.email);
+      await signInWithEmailAndPassword(auth, form.email, form.password);
+      Swal.fire('Success 🎉', 'Logged in successfully', 'success');
+      navigate(redirectPath, { replace: true });
     } catch (err) {
       Swal.fire('Login failed', err.message, 'error');
     } finally {
@@ -52,13 +33,12 @@ const Login = () => {
     }
   };
 
-  // google login
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
-      const provider = new GoogleAuthProvider();
-      const cred = await signInWithPopup(auth, provider);
-      await resolveRoleAndRedirect(cred.user.email);
+      await signInWithPopup(auth, googleProvider);
+      Swal.fire('Success 🎉', 'Logged in with Google', 'success');
+      navigate('/dashboard/user');
     } catch (err) {
       Swal.fire('Google login failed', err.message, 'error');
     } finally {
@@ -67,22 +47,22 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 to-indigo-200 px-4">
+    <div className="p-4 flex items-center justify-center min-h-[calc(100vh-80px)] bg-gradient-to-r from-blue-100 to-indigo-200">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-10">
         <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-8">
           Welcome Back
         </h2>
 
-        {/* EMAIL / PASSWORD FORM */}
-        <form onSubmit={handleEmailLogin} className="space-y-6">
+        <form onSubmit={handleEmailLogin} className="space-y-6 text-gray-600">
           <div className="relative">
             <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="email"
+              name="email"
               placeholder="Email"
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+              value={form.email}
+              onChange={handleChange}
               required
             />
           </div>
@@ -91,10 +71,11 @@ const Login = () => {
             <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type={showPass ? 'text' : 'password'}
+              name="password"
               placeholder="Password"
-              className="w-full pl-10 pr-20 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              className="w-full pl-10 pr-20 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+              value={form.password}
+              onChange={handleChange}
               required
             />
             <button
@@ -108,28 +89,26 @@ const Login = () => {
           </div>
 
           <div className="text-right text-sm">
-            <Link to="#" className="text-blue-500 hover:underline">
+            <Link to="/forgot-password" className="text-blue-500 hover:underline">
               Forgot password?
             </Link>
           </div>
 
           <button
             disabled={loading}
-            className="w-full bg-indigo-500 text-white font-semibold py-3 rounded-xl shadow-md hover:bg-indigo-600 transition disabled:opacity-60 disabled:cursor-not-allowed"
             type="submit"
+            className="w-full bg-indigo-500 text-white font-semibold py-3 rounded-xl shadow-md hover:bg-indigo-600 transition disabled:opacity-60"
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 
-        {/* OR divider */}
         <div className="flex items-center my-6">
           <span className="flex-grow h-px bg-gray-300" />
           <span className="px-3 text-gray-500 text-sm">OR</span>
           <span className="flex-grow h-px bg-gray-300" />
         </div>
 
-        {/* GOOGLE LOGIN */}
         <button
           disabled={loading}
           onClick={handleGoogleLogin}

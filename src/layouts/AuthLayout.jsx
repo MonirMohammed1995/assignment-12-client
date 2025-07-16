@@ -12,7 +12,7 @@ const AuthLayout = () => {
       {/* Main Section */}
       <div className="flex flex-1 flex-col-reverse lg:flex-row justify-center items-center px-4 py-10 gap-10">
         {/* Outlet Content (Form) */}
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 mt-8">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6">
           <Outlet />
         </div>
 

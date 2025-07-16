@@ -1,84 +1,81 @@
-// src/layout/DashboardLayout.jsx
-import { Outlet, NavLink } from 'react-router-dom';
-import useAuth from '../hooks/useAuth'; // ✅ use the custom hook for safety
-import Navbar from '../components/shared/Navbar';
-import Footer from '../components/shared/Footer';
+import { useContext } from 'react';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthProvider';
+import { LogOut } from 'lucide-react';
+import Swal from 'sweetalert2';
+import { AdminSidebar, ModeratorSidebar, UserSidebar } from '../components/shared/DashboardLink';
 
 const DashboardLayout = () => {
-  const { role, loading } = useAuth(); // Safe access to role and loading
+  const { user, role, loading, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center">
-        <span className="text-xl font-semibold text-indigo-600">Loading dashboard...</span>
+        <span className="text-xl font-semibold text-indigo-600 animate-pulse">
+          Loading dashboard...
+        </span>
       </div>
     );
   }
 
+  const handleLogout = async () => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'You want to logout!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Logout',
+    });
+
+    if (result.isConfirmed) {
+      await logout();
+      Swal.fire('Logged Out', 'You have been successfully logged out.', 'success');
+      navigate('/');
+    }
+  };
+
   return (
-    <div>
-      <Navbar/>
-      <div className="flex min-h-screen bg-gray-100 mt-20">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-md p-6 hidden md:block">
-        <h2 className="text-xl font-bold mb-6 text-indigo-700">Dashboard</h2>
-        <nav className="space-y-3">
-          {/* User Sidebar */}
-          {role === 'user' && (
-            <>
-              <DashboardLink to="/dashboard/user" label="My Profile" />
-              <DashboardLink to="/dashboard/user/applications" label="My Applications" />
-              <DashboardLink to="/dashboard/user/reviews" label="My Reviews" />
-            </>
-          )}
+    <div className="min-h-screen flex flex-col">
+      <div className="flex flex-1 bg-gray-50 mt-20 min-h-[calc(100vh-80px)] text-gray-700">
+        <aside className="w-64 bg-white shadow-md p-6 hidden md:block sticky top-20 self-start h-[calc(100vh-80px)] overflow-y-auto rounded-tr-2xl">
+          {/* User Info */}
+          <div className="flex items-center gap-3 mb-6">
+            <img
+              src={user?.photoURL || 'https://i.ibb.co/2M7tV5Z/avatar.png'}
+              alt="User Avatar"
+              className="w-12 h-12 rounded-full border border-indigo-300"
+            />
+            <div>
+              <p className="font-semibold">{user?.displayName || 'User'}</p>
+              <p className="text-sm capitalize text-gray-500">{role}</p>
+            </div>
+          </div>
 
-          {/* Admin Sidebar */}
-          {role === 'admin' && (
-            <>
-              <DashboardLink to="/dashboard/admin" label="Admin Panel" />
-              <DashboardLink to="/dashboard/admin/users" label="Manage Users" />
-              <DashboardLink to="/dashboard/admin/manage-scholarship" label="Manage Scholarships" />
-              <DashboardLink to="/dashboard/admin/applications" label="Manage Applications" />
-              <DashboardLink to="/dashboard/admin/analytics" label="Analytics" />
-            </>
-          )}
+          <hr className="mb-6" />
 
-          {/* Moderator Sidebar */}
-          {role === 'moderator' && (
-            <>
-              <DashboardLink to="/dashboard/moderator" label="Moderator Panel" />
-              <DashboardLink to="/dashboard/moderator/manage-scholarships" label="Manage Scholarships" />
-              <DashboardLink to="/dashboard/moderator/add-scholarship" label="Add Scholarship" />
-              <DashboardLink to="/dashboard/moderator/reviews" label="All Reviews" />
-              <DashboardLink to="/dashboard/moderator/applications" label="All Applications" />
-            </>
-          )}
-        </nav>
-      </aside>
+          <nav className="space-y-3" aria-label={`${role} Navigation`}>
+            {role === 'user' && <UserSidebar />}
+            {role === 'admin' && <AdminSidebar />}
+            {role === 'moderator' && <ModeratorSidebar />}
+          </nav>
 
-      {/* Main Content */}
-      <main className="flex-1 p-6">
-        <Outlet />
-      </main>
-      
+          <hr className="my-6" />
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition"
+          >
+            <LogOut size={18} /> Logout
+          </button>
+        </aside>
+
+        <main className="flex-1 p-4 md:p-6 overflow-auto">
+          <Outlet />
+        </main>
+      </div>
     </div>
-    <Footer/>
-    </div>
-    
   );
 };
 
 export default DashboardLayout;
-
-const DashboardLink = ({ to, label }) => (
-  <NavLink
-    to={to}
-    className={({ isActive }) =>
-      `block font-medium px-2 py-1 rounded ${
-        isActive ? 'text-white bg-indigo-600' : 'text-gray-700 hover:text-indigo-600'
-      }`
-    }
-  >
-    {label}
-  </NavLink>
-);

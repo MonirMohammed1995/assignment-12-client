@@ -1,6 +1,6 @@
 import React from 'react';
 
-const AllAppliedScholarship = () => {
+const AllAppliedScholarships = () => {
     return (
         <div>
             All Applied Scholarship
@@ -8,4 +8,4 @@ const AllAppliedScholarship = () => {
     );
 };
 
-export default AllAppliedScholarship;
+export default AllAppliedScholarships;

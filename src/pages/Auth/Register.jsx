@@ -1,49 +1,76 @@
 import React, { useState } from 'react';
+import { FaEnvelope, FaLock, FaUser, FaGoogle, FaImage } from 'react-icons/fa';
+import Swal from 'sweetalert2';
+import { useNavigate, Link } from 'react-router-dom';
+import { uploadImageToImgbb } from '../../utils/uploadImageToImgbb';
+
 import {
+  getAuth,
   createUserWithEmailAndPassword,
   updateProfile,
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { FaEnvelope, FaLock, FaUser, FaGoogle } from 'react-icons/fa';
-import Swal from 'sweetalert2';
-import { useNavigate, Link } from 'react-router-dom';
+import { app } from '../../firebase/firebase.config';
 
-import useAuth from '../../hooks/useAuth'; // ✅ Custom auth hook
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
 const Register = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('user');
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'user',
+  });
+  const [image, setImage] = useState(null);
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { auth, setRole: setContextRole } = useAuth(); // ✅ Now auth is available
   const navigate = useNavigate();
 
-  const saveUserToDB = async (name, email, role) => {
+  const handleChange = e =>
+    setForm({ ...form, [e.target.name]: e.target.value });
+
+  const saveUserToDB = async (name, email, role, imageUrl) => {
     const api = import.meta.env.VITE_API_URL;
-    const newUser = { name, email, role };
-    await fetch(`${api}/users`, {
-      method: 'POST',
+    const newUser = { name, email, role, image: imageUrl };
+
+    await fetch(`${api}/users/${email}`, {
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newUser),
     });
   };
 
-  const handleRegister = async (e) => {
+  const handleRegister = async e => {
     e.preventDefault();
+
+    if (!image) {
+      return Swal.fire('Error', 'Please upload a profile image!', 'error');
+    }
+
     setLoading(true);
     try {
-      const result = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(result.user, { displayName: name });
-      await saveUserToDB(name, email, role);
-      setContextRole(role);
-      Swal.fire('Success!', 'Registration successful', 'success');
-      navigate(`/dashboard/${role}`);
+      const imageUrl = await uploadImageToImgbb(image);
+
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        form.email,
+        form.password
+      );
+
+      await updateProfile(userCredential.user, {
+        displayName: form.name,
+        photoURL: imageUrl,
+      });
+
+      await saveUserToDB(form.name, form.email, form.role, imageUrl);
+      Swal.fire('Success!', 'Account created successfully', 'success');
+
+      navigate(`/dashboard/${form.role}`);
     } catch (err) {
-      Swal.fire('Registration failed', err.message, 'error');
+      Swal.fire('Registration Failed', err.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -52,96 +79,109 @@ const Register = () => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      await saveUserToDB(result.user.displayName, result.user.email, 'user');
-      setContextRole('user');
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      const imageUrl = user.photoURL || 'https://i.ibb.co/Y3bFBLT/default-user.png';
+
+      await saveUserToDB(user.displayName, user.email, 'user', imageUrl);
       Swal.fire('Success!', 'Logged in with Google', 'success');
       navigate('/dashboard/user');
     } catch (err) {
-      Swal.fire('Google sign-in failed', err.message, 'error');
+      Swal.fire('Google Login Failed', err.message, 'error');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-indigo-100 to-blue-200 flex items-center justify-center px-4 py-8">
+    <div className="p-4 min-h-[calc(100vh-80px)] bg-gradient-to-r from-indigo-100 to-blue-200 flex items-center justify-center">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-10">
         <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-8">
           Create Account
         </h2>
 
-        <form onSubmit={handleRegister} className="space-y-6 text-gray-700">
+        <form onSubmit={handleRegister} className="space-y-4 text-gray-700">
+          {/* Name */}
           <div className="relative">
             <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
+              name="name"
               placeholder="Full Name"
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={form.name}
+              onChange={handleChange}
               required
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
+          {/* Email */}
           <div className="relative">
             <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="email"
+              name="email"
               placeholder="Email address"
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={form.email}
+              onChange={handleChange}
               required
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
+          {/* Password */}
           <div className="relative">
             <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type={showPass ? 'text' : 'password'}
+              name="password"
               placeholder="Password"
-              className="w-full pl-10 pr-20 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={form.password}
+              onChange={handleChange}
               required
+              className="w-full pl-10 pr-20 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
             />
             <button
               type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-600 font-medium"
               onClick={() => setShowPass(!showPass)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-600"
               tabIndex={-1}
             >
               {showPass ? 'Hide' : 'Show'}
             </button>
           </div>
 
-          <select
-            className="w-full border border-gray-300 py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-          >
-            <option value="user">User</option>
-            <option value="moderator">Moderator</option>
-            <option value="admin">Admin</option>
-          </select>
+          {/* Image Upload */}
+          <div className="relative">
+            <FaImage className="absolute left-3 top-3 text-gray-400" />
+            <input
+              type="file"
+              accept="image/*"
+              required
+              onChange={e => setImage(e.target.files[0])}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
 
+          {/* Register Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-500 text-white font-semibold py-3 rounded-xl shadow-md hover:bg-blue-600 transition disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full bg-blue-500 text-white font-semibold py-3 rounded-xl hover:bg-blue-600 transition disabled:opacity-60"
           >
             {loading ? 'Creating account...' : 'Register'}
           </button>
         </form>
 
+        {/* Divider */}
         <div className="flex items-center my-6">
           <span className="h-px flex-1 bg-gray-300" />
           <span className="px-4 text-sm text-gray-500">or</span>
           <span className="h-px flex-1 bg-gray-300" />
         </div>
 
+        {/* Google Sign In */}
         <button
           type="button"
           onClick={handleGoogleSignIn}
@@ -152,6 +192,7 @@ const Register = () => {
           <span>Continue with Google</span>
         </button>
 
+        {/* Login Link */}
         <div className="text-center mt-6 text-sm text-gray-600">
           Already have an account?{' '}
           <Link to="/login" className="text-indigo-600 hover:underline">

@@ -1,119 +1,134 @@
-import { createBrowserRouter } from 'react-router-dom';
+// src/routes/router.jsx
+import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 
 // Layouts
 import Root from '../layouts/Root';
-import AuthLayout from '../layouts/AuthLayout';
 import DashboardLayout from '../layouts/DashboardLayout';
+import AuthLayout from '../layouts/AuthLayout';
 
-// Public pages
+// Error Pages
 import PageNotFound from '../pages/Error/PageNotFound';
-import Home from '../pages/Home/Home';
-import AllScholarship from '../pages/Scholarships/AllScholarships';
-import ScholarshipDetails from '../pages/Scholarships/ScholarshipDetails';
+import Unauthorized from '../pages/Error/Unauthorized';
 
-// Auth pages
+// Public Pages
+import Home from '../pages/Home/Home';
+import AllScholarships from '../pages/Scholarships/AllScholarships';
+import ScholarshipDetails from '../pages/Scholarships/ScholarshipDetails';
 import Login from '../pages/Auth/Login';
 import Register from '../pages/Auth/Register';
 
-// USER dashboard pages
+// User Dashboard Pages
 import MyProfile from '../pages/Dashboard/User/MyProfile';
 import MyApplications from '../pages/Dashboard/User/MyApplications';
 import MyReviews from '../pages/Dashboard/User/MyReviews';
 
-// ADMIN dashboard pages
-import AdminDashboard from '../pages/Dashboard/Admin/AdminDashboard';
+// Admin Dashboard Pages
+import AdminProfile from '../pages/Dashboard/Admin/AdminProfile';
 import AddScholarship from '../pages/Dashboard/Admin/AddScholarship';
-import ManageScholarships from '../pages/Dashboard/Admin/ManageScholarships'; // ✅ fixed here
-import ManageApplications from '../pages/Dashboard/Admin/ManageApplications';
+import ManageScholarship from '../pages/Dashboard/Admin/ManageScholarship';
+import ManageAppliedApplication from '../pages/Dashboard/Admin/ManageAppliedApplication';
 import ManageUsers from '../pages/Dashboard/Admin/ManageUsers';
+import ManageReviews from '../pages/Dashboard/Admin/ManageReviews';
 
-// MODERATOR dashboard pages
-import ModeratorDashboard from '../pages/Dashboard/Moderator/ModeratorDashboard';
-import ModeratorAddScholarship from '../pages/Dashboard/Moderator/ModeratorAddScholarship';
-import ManageModeratorScholarships from '../pages/Dashboard/Moderator/ManageScholarships';
+// Moderator Dashboard Pages
+import ModeratorProfile from '../pages/Dashboard/Moderator/ModeratorProfile';
+import AddScholarshipModerator from '../pages/Dashboard/Moderator/AddScholarships'; // renamed for clarity
+import ManageScholarshipsModerator from '../pages/Dashboard/Moderator/ManageScholarships';
 import AllReviews from '../pages/Dashboard/Moderator/AllReviews';
-import AllApplications from '../pages/Dashboard/Moderator/AllApplications';
+import AllAppliedScholarships from '../pages/Dashboard/Moderator/AllAppliedScholarships';
 
-// Route guards
-import PrivateRoute from '../routes/PrivateRoute';
-import AdminRoute from '../routes/AdminRoute';
-import ModeratorRoute from '../routes/ModeratorRoute';
+// Route Guards
+import PrivateRoute from './PrivateRoute';
+import AdminRoute from './AdminRoute';
+import ModeratorRoute from './ModeratorRoute';
+
+// Role-Based Redirect Page
+import DashboardRedirect from '../pages/Dashboard/DashboardRedirect';
 
 export const router = createBrowserRouter([
-  // 🌐 PUBLIC ROUTES
   {
     path: '/',
     element: <Root />,
     errorElement: <PageNotFound />,
     children: [
+      // Public Routes
       { index: true, element: <Home /> },
-      { path: 'all-scholarships', element: <AllScholarship /> },
+      { path: 'all-scholarships', element: <AllScholarships /> },
+      { path: 'scholarship-details/:id', element: <ScholarshipDetails /> },
+
+      // Auth Routes
       {
-        path: 'scholarships/:id',
+        element: <AuthLayout />,
+        children: [
+          { path: 'login', element: <Login /> },
+          { path: 'register', element: <Register /> },
+        ],
+      },
+
+      // Unauthorized Route
+      { path: 'unauthorized', element: <Unauthorized /> },
+
+      // Dashboard Routes — Protected by PrivateRoute
+      {
+        path: 'dashboard',
         element: (
           <PrivateRoute>
-            <ScholarshipDetails />
+            <DashboardLayout />
           </PrivateRoute>
         ),
+        children: [
+          // Redirect dashboard base to role-based dashboard
+          { index: true, element: <DashboardRedirect /> },
+
+          // User Dashboard Routes
+          {
+            path: 'user',
+            children: [
+              { index: true, element: <MyProfile /> },
+              { path: 'my-applications', element: <MyApplications /> },
+              { path: 'my-reviews', element: <MyReviews /> },
+            ],
+          },
+
+          // Admin Dashboard Routes
+          {
+            path: 'admin',
+            element: (
+              <AdminRoute>
+                <Outlet />
+              </AdminRoute>
+            ),
+            children: [
+              { index: true, element: <AdminProfile /> },
+              { path: 'add-scholarship', element: <AddScholarship /> },
+              { path: 'manage-scholarship', element: <ManageScholarship /> },
+              { path: 'manage-applied-applications', element: <ManageAppliedApplication /> },
+              { path: 'manage-users', element: <ManageUsers /> },
+              { path: 'manage-reviews', element: <ManageReviews /> },
+            ],
+          },
+
+          // Moderator Dashboard Routes
+          {
+            path: 'moderator',
+            element: (
+              <ModeratorRoute>
+                <Outlet />
+              </ModeratorRoute>
+            ),
+            children: [
+              { index: true, element: <ModeratorProfile /> },
+              { path: 'add-scholarship', element: <AddScholarshipModerator /> },
+              { path: 'manage-scholarship', element: <ManageScholarshipsModerator /> },
+              { path: 'all-reviews', element: <AllReviews /> },
+              { path: 'all-applied-scholarship', element: <AllAppliedScholarships /> },
+            ],
+          },
+        ],
       },
     ],
   },
 
-  // 🔒 AUTH ROUTES
-  {
-    element: <AuthLayout />,
-    children: [
-      { path: 'login', element: <Login /> },
-      { path: 'register', element: <Register /> },
-    ],
-  },
-
-  // 🔐 USER DASHBOARD
-  {
-    path: 'dashboard/user',
-    element: (
-      <PrivateRoute role="user">
-        <DashboardLayout />
-      </PrivateRoute>
-    ),
-    children: [
-      { index: true, element: <MyProfile /> },
-      { path: 'applications', element: <MyApplications /> },
-      { path: 'reviews', element: <MyReviews /> },
-    ],
-  },
-
-  // 🔐 ADMIN DASHBOARD
-  {
-    path: 'dashboard/admin',
-    element: (
-      <AdminRoute>
-        <DashboardLayout />
-      </AdminRoute>
-    ),
-    children: [
-      { index: true, element: <AdminDashboard /> },
-      { path: 'users', element: <ManageUsers /> },
-      { path: 'add-scholarship', element: <AddScholarship /> },
-      { path: 'manage-scholarship', element: <ManageScholarships /> }, // ✅ fixed route name
-      { path: 'manage-applications', element: <ManageApplications /> },
-    ],
-  },
-
-  // 🔐 MODERATOR DASHBOARD
-  {
-    path: 'dashboard/moderator',
-    element: (
-      <ModeratorRoute>
-        <DashboardLayout />
-      </ModeratorRoute>
-    ),
-    children: [
-      { index: true, element: <ModeratorDashboard /> },
-      { path: 'manage-scholarships', element: <ManageModeratorScholarships /> },
-      { path: 'add-scholarship', element: <ModeratorAddScholarship /> },
-      { path: 'reviews', element: <AllReviews /> },
-      { path: 'all-applications', element: <AllApplications /> },
-    ],
-  },
+  // Fallback Route for 404 or unmatched URLs
+  { path: '*', element: <Navigate to="/" replace /> },
 ]);
