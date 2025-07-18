@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthProvider';
 import { LogOut } from 'lucide-react';
 import Swal from 'sweetalert2';
@@ -35,9 +35,19 @@ const DashboardLayout = () => {
     }
   };
 
+  // Role-based sidebar mapping
+  const sidebarComponents = {
+    user: <UserSidebar />,
+    admin: <AdminSidebar />,
+    moderator: <ModeratorSidebar />,
+  };
+
+  const Sidebar = sidebarComponents[role] || null;
+
   return (
     <div className="min-h-screen flex flex-col">
       <div className="flex flex-1 bg-gray-50 mt-20 min-h-[calc(100vh-80px)] text-gray-700">
+        {/* Sidebar */}
         <aside className="w-64 bg-white shadow-md p-6 hidden md:block sticky top-20 self-start h-[calc(100vh-80px)] overflow-y-auto rounded-tr-2xl">
           {/* User Info */}
           <div className="flex items-center gap-3 mb-6">
@@ -54,10 +64,9 @@ const DashboardLayout = () => {
 
           <hr className="mb-6" />
 
+          {/* Dynamic Sidebar Based on Role */}
           <nav className="space-y-3" aria-label={`${role} Navigation`}>
-            {role === 'user' && <UserSidebar />}
-            {role === 'admin' && <AdminSidebar />}
-            {role === 'moderator' && <ModeratorSidebar />}
+            {Sidebar}
           </nav>
 
           <hr className="my-6" />
@@ -70,6 +79,7 @@ const DashboardLayout = () => {
           </button>
         </aside>
 
+        {/* Main Content */}
         <main className="flex-1 p-4 md:p-6 overflow-auto">
           <Outlet />
         </main>

@@ -1,13 +1,9 @@
-// src/context/AuthProvider.jsx
 import { createContext, useEffect, useState } from 'react';
-import {
-  getAuth,
-  onAuthStateChanged,
-  signOut
-} from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { app } from '../firebase/firebase.config';
+import axios from 'axios';
 
-export const AuthContext = createContext(null);
+export const AuthContext = createContext();
 const auth = getAuth(app);
 
 const AuthProvider = ({ children }) => {
@@ -15,35 +11,36 @@ const AuthProvider = ({ children }) => {
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Load theme from localStorage if exists
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('theme') || 'light';
+  });
+
   useEffect(() => {
+    localStorage.setItem('theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    setLoading(true); // start loading before auth check
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setLoading(true);
+      setUser(currentUser);
+
       if (currentUser?.email) {
-        setUser(currentUser);
         try {
-          const res = await fetch(`${import.meta.env.VITE_API_URL}/jwt`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: currentUser.email }),
-          });
-          const { token } = await res.json();
-          if (token) {
-            localStorage.setItem('token', token);
-            const { role = 'user' } = JSON.parse(atob(token.split('.')[1]));
-            setRole(role);
-          } else {
-            setRole('user');
-          }
-        } catch {
-          setRole('user');
+          const api = import.meta.env.VITE_API_URL;  // fixed here
+          const res = await axios.get(`${api}/users/role/${currentUser.email}`);
+          setRole(res.data.role);
+        } catch (err) {
+          console.error('Failed to fetch role:', err);
+          setRole(null);
         }
       } else {
-        setUser(null);
         setRole(null);
-        localStorage.removeItem('token');
       }
       setLoading(false);
     });
+
     return () => unsubscribe();
   }, []);
 
@@ -51,9 +48,10 @@ const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       await signOut(auth);
-      localStorage.removeItem('token');
       setUser(null);
       setRole(null);
+    } catch (err) {
+      console.error('Logout failed:', err);
     } finally {
       setLoading(false);
     }
@@ -63,15 +61,12 @@ const AuthProvider = ({ children }) => {
     user,
     role,
     loading,
+    theme,
+    setTheme,
     logout,
-    auth,
   };
 
-  return (
-    <AuthContext.Provider value={authInfo}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>;
 };
 
 export default AuthProvider;

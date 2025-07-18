@@ -1,4 +1,3 @@
-// src/routes/router.jsx
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 
 // Layouts
@@ -32,7 +31,7 @@ import ManageReviews from '../pages/Dashboard/Admin/ManageReviews';
 
 // Moderator Dashboard Pages
 import ModeratorProfile from '../pages/Dashboard/Moderator/ModeratorProfile';
-import AddScholarshipModerator from '../pages/Dashboard/Moderator/AddScholarships'; // renamed for clarity
+import AddScholarshipModerator from '../pages/Dashboard/Moderator/AddScholarships';
 import ManageScholarshipsModerator from '../pages/Dashboard/Moderator/ManageScholarships';
 import AllReviews from '../pages/Dashboard/Moderator/AllReviews';
 import AllAppliedScholarships from '../pages/Dashboard/Moderator/AllAppliedScholarships';
@@ -41,6 +40,7 @@ import AllAppliedScholarships from '../pages/Dashboard/Moderator/AllAppliedSchol
 import PrivateRoute from './PrivateRoute';
 import AdminRoute from './AdminRoute';
 import ModeratorRoute from './ModeratorRoute';
+import UserRoute from './UserRoute';
 
 // Role-Based Redirect Page
 import DashboardRedirect from '../pages/Dashboard/DashboardRedirect';
@@ -68,7 +68,7 @@ export const router = createBrowserRouter([
       // Unauthorized Route
       { path: 'unauthorized', element: <Unauthorized /> },
 
-      // Dashboard Routes — Protected by PrivateRoute
+      // Protected Dashboard Routes
       {
         path: 'dashboard',
         element: (
@@ -77,12 +77,17 @@ export const router = createBrowserRouter([
           </PrivateRoute>
         ),
         children: [
-          // Redirect dashboard base to role-based dashboard
+          // Role-Based Redirect on /dashboard
           { index: true, element: <DashboardRedirect /> },
 
-          // User Dashboard Routes
+          // 👤 User Dashboard
           {
             path: 'user',
+            element: (
+              <UserRoute>
+                <Outlet />
+              </UserRoute>
+            ),
             children: [
               { index: true, element: <MyProfile /> },
               { path: 'my-applications', element: <MyApplications /> },
@@ -90,7 +95,7 @@ export const router = createBrowserRouter([
             ],
           },
 
-          // Admin Dashboard Routes
+          // 🛡 Admin Dashboard
           {
             path: 'admin',
             element: (
@@ -108,7 +113,7 @@ export const router = createBrowserRouter([
             ],
           },
 
-          // Moderator Dashboard Routes
+          // 🧰 Moderator Dashboard
           {
             path: 'moderator',
             element: (
@@ -129,6 +134,6 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // Fallback Route for 404 or unmatched URLs
+  // Fallback Route
   { path: '*', element: <Navigate to="/" replace /> },
 ]);

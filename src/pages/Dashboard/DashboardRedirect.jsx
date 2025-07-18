@@ -1,19 +1,26 @@
-import React, { useContext } from 'react';
-import { Navigate } from 'react-router-dom';
+import { useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthProvider';
 
 const DashboardRedirect = () => {
-  const { role, loading } = useContext(AuthContext);
+  const { user, role, loading } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  if (loading) {
-    return <p className="text-center mt-20">Loading dashboard...</p>;
-  }
+  useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        navigate('/login');
+      } else if (role === 'admin') {
+        navigate('/dashboard/admin');
+      } else if (role === 'moderator') {
+        navigate('/dashboard/moderator');
+      } else {
+        navigate('/dashboard/user');
+      }
+    }
+  }, [user, role, loading, navigate]);
 
-  if (role === 'admin') return <Navigate to="/dashboard/admin" replace />;
-  if (role === 'moderator') return <Navigate to="/dashboard/moderator" replace />;
-  if (role === 'user') return <Navigate to="/dashboard/user" replace />;
-
-  return <Navigate to="/unauthorized" replace />;
+  return <p className="text-center mt-10">Redirecting...</p>;
 };
 
 export default DashboardRedirect;

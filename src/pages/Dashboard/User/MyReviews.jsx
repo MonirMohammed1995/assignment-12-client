@@ -10,7 +10,8 @@ const MyReviews = () => {
 
   useEffect(() => {
     if (user?.email) {
-      fetch(`https://your-api-url.com/reviews?email=${user.email}`)
+      const api = import.meta.env.VITE_API_URL;
+      fetch(`${api}/reviews?email=${user.email}`)
         .then(res => res.json())
         .then(data => {
           setReviews(data);
@@ -28,7 +29,8 @@ const MyReviews = () => {
       confirmButtonText: 'Yes, delete it!',
     }).then((result) => {
       if (result.isConfirmed) {
-        fetch(`https://your-api-url.com/reviews/${id}`, {
+        const api = import.meta.env.VITE_API_URL
+        fetch(`${api}/reviews/${id}`, {
           method: 'DELETE',
         })
           .then(res => res.json())
