@@ -3,24 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthProvider';
 
 const DashboardRedirect = () => {
-  const { user, role, loading } = useContext(AuthContext);
+  const { role } = useContext(AuthContext);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        navigate('/login');
-      } else if (role === 'admin') {
-        navigate('/dashboard/admin');
-      } else if (role === 'moderator') {
-        navigate('/dashboard/moderator');
-      } else {
-        navigate('/dashboard/user');
-      }
-    }
-  }, [user, role, loading, navigate]);
+    if (role === 'admin') navigate('/dashboard/admin');
+    else if (role === 'moderator') navigate('/dashboard/moderator');
+    else navigate('/dashboard/user');
+  }, [role, navigate]);
 
-  return <p className="text-center mt-10">Redirecting...</p>;
+  return null;
 };
 
 export default DashboardRedirect;

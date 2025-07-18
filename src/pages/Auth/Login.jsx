@@ -25,10 +25,16 @@ const Login = () => {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  // Redirect based on role with token attached to fetch
   const handleRedirectByRole = async (email) => {
     try {
       const api = import.meta.env.VITE_API_URL;
-      const res = await axios.get(`${api}/users/role/${email}`);
+      const token = localStorage.getItem('accessToken');
+      const res = await axios.get(`${api}/users/role/${email}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const role = res.data?.role || 'user';
 
       if (redirectPath) {
@@ -58,12 +64,21 @@ const Login = () => {
     try {
       const result = await signInWithEmailAndPassword(auth, form.email, form.password);
       const user = result.user;
+
+      // Get JWT token from backend
+      const api = import.meta.env.VITE_API_URL;
+      const { data } = await axios.post(`${api}/jwt`, { email: user.email });
+
+      // Save token to localStorage
+      localStorage.setItem('accessToken', data.token);
+
       Swal.fire({
         icon: 'success',
         title: 'Success 🎉',
         text: 'Logged in successfully',
         confirmButtonColor: '#4F46E5',
       });
+
       await handleRedirectByRole(user.email);
     } catch (err) {
       Swal.fire({
@@ -82,12 +97,21 @@ const Login = () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
+
+      // Get JWT token from backend
+      const api = import.meta.env.VITE_API_URL;
+      const { data } = await axios.post(`${api}/jwt`, { email: user.email });
+
+      // Save token to localStorage
+      localStorage.setItem('accessToken', data.token);
+
       Swal.fire({
         icon: 'success',
         title: 'Success 🎉',
         text: 'Logged in with Google',
         confirmButtonColor: '#4F46E5',
       });
+
       await handleRedirectByRole(user.email);
     } catch (err) {
       Swal.fire({
@@ -101,11 +125,14 @@ const Login = () => {
     }
   };
 
-  // Optional: redirect if already logged in
+  // Optional: redirect if already logged in (with token)
   useEffect(() => {
-    if (auth.currentUser?.email) {
-      handleRedirectByRole(auth.currentUser.email);
-    }
+    const checkUser = async () => {
+      if (auth.currentUser?.email) {
+        await handleRedirectByRole(auth.currentUser.email);
+      }
+    };
+    checkUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -17,7 +17,7 @@ const ModeratorProfile = () => {
     <section className="p-6 md:p-10">
       <div className="flex flex-col items-center gap-4 bg-white shadow-md rounded-lg p-6 max-w-xl mx-auto">
         <img
-          src={user.role?.photoURL || 'https://i.ibb.co/5vTzJgM/avatar.png'}
+          src={user.role?.image || 'https://i.ibb.co/5vTzJgM/avatar.png'}
           alt="User Avatar"
           className="w-32 h-32 rounded-full border-4 border-primary shadow-lg"
         />

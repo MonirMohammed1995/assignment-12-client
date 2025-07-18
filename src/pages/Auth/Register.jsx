@@ -26,14 +26,13 @@ const Register = () => {
   const [image, setImage] = useState(null);
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
+  const api = import.meta.env.VITE_API_URL;
 
-  const handleChange = e =>
+  const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
   const saveUserToDB = async (name, email, role, imageUrl) => {
-    const api = import.meta.env.VITE_API_URL;
     const newUser = { name, email, role, image: imageUrl };
 
     await fetch(`${api}/users/${email}`, {
@@ -41,11 +40,18 @@ const Register = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newUser),
     });
+
+    const tokenRes = await fetch(`${api}/jwt`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const { token } = await tokenRes.json();
+    localStorage.setItem('access-token', token);
   };
 
-  const handleRegister = async e => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-
     if (!image) {
       return Swal.fire('Error', 'Please upload a profile image!', 'error');
     }
@@ -82,10 +88,12 @@ const Register = () => {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
-      const imageUrl = user.photoURL || 'https://i.ibb.co/Y3bFBLT/default-user.png';
+      const imageUrl =
+        user.photoURL || 'https://i.ibb.co/Y3bFBLT/default-user.png';
 
       await saveUserToDB(user.displayName, user.email, 'user', imageUrl);
       Swal.fire('Success!', 'Logged in with Google', 'success');
+
       navigate('/dashboard/user');
     } catch (err) {
       Swal.fire('Google Login Failed', err.message, 'error');
@@ -159,7 +167,7 @@ const Register = () => {
               type="file"
               accept="image/*"
               required
-              onChange={e => setImage(e.target.files[0])}
+              onChange={(e) => setImage(e.target.files[0])}
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
             />
           </div>
