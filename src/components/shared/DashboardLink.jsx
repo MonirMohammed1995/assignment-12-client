@@ -31,6 +31,7 @@ export const UserSidebar = () => (
 export const AdminSidebar = () => (
   <>
     <DashboardLink to="/dashboard/admin" label="Admin Profile" />
+    <DashboardLink to="/dashboard/admin/add-scholarship" label="Add Scholarship" />
     <DashboardLink to="/dashboard/admin/manage-users" label="Manage Users" />
     <DashboardLink to="/dashboard/admin/manage-scholarship" label="Manage Scholarships" />
     <DashboardLink to="/dashboard/admin/manage-applied-applications" label="Manage Applications" />

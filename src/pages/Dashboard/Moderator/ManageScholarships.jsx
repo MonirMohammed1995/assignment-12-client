@@ -36,21 +36,21 @@ const ManageScholarships = () => {
   };
 
   const handleEdit = () => {
-    fetch(`${api}/scholarships/${editData._id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editData),
-    })
-      .then(res => res.json())
-      .then(() => {
-        Swal.fire('Updated!', 'Scholarship has been updated.', 'success');
-        setSelected(null);
-        setEditData({});
-        fetch(`${api}/scholarships`)
-          .then(res => res.json())
-          .then(data => setScholarships(data));
-      });
-  };
+  fetch(`${api}/scholarships/${editData._id}`, {
+    method: 'PATCH', // 🔁 Changed from PUT to PATCH
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(editData),
+  })
+    .then(res => res.json())
+    .then(() => {
+      Swal.fire('Updated!', 'Scholarship has been updated.', 'success');
+      setSelected(null);
+      setEditData({});
+      fetch(`${api}/scholarships`)
+        .then(res => res.json())
+        .then(data => setScholarships(data));
+    });
+};
 
   return (
     <div className="p-6">

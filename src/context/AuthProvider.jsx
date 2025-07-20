@@ -1,3 +1,4 @@
+// src/context/AuthProvider.jsx
 import { createContext, useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { app } from '../firebase/firebase.config';
@@ -11,47 +12,49 @@ const AuthProvider = ({ children }) => {
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load theme from localStorage if exists
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'light';
-  });
+  // Load theme from localStorage or default to light
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
 
+  // Sync theme changes with localStorage and HTML tag
   useEffect(() => {
     localStorage.setItem('theme', theme);
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
+  // Handle user state and fetch role from backend
   useEffect(() => {
-    setLoading(true); // start loading before auth check
+    setLoading(true);
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
 
       if (currentUser?.email) {
         try {
-          const api = import.meta.env.VITE_API_URL;  // fixed here
-          const res = await axios.get(`${api}/users/role/${currentUser.email}`);
-          setRole(res.data.role);
-        } catch (err) {
-          console.error('Failed to fetch role:', err);
-          setRole(null);
+          const api = import.meta.env.VITE_API_URL;
+          const { data } = await axios.get(`${api}/users/role/${currentUser.email}`);
+          setRole(data?.role || 'user');
+        } catch (error) {
+          console.error('Error fetching user role:', error.message);
+          setRole('user'); // fallback to user role
         }
       } else {
         setRole(null);
       }
+
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
+  // Logout function
   const logout = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       await signOut(auth);
       setUser(null);
       setRole(null);
-    } catch (err) {
-      console.error('Logout failed:', err);
+    } catch (error) {
+      console.error('Error during logout:', error.message);
     } finally {
       setLoading(false);
     }

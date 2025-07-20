@@ -1,3 +1,4 @@
+// src/routes/router.jsx
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 
 // Layouts
@@ -42,7 +43,7 @@ import AdminRoute from './AdminRoute';
 import ModeratorRoute from './ModeratorRoute';
 import UserRoute from './UserRoute';
 
-// Role-Based Redirect Page
+// Dashboard Redirect (based on role)
 import DashboardRedirect from '../pages/Dashboard/DashboardRedirect';
 
 export const router = createBrowserRouter([
@@ -51,12 +52,12 @@ export const router = createBrowserRouter([
     element: <Root />,
     errorElement: <PageNotFound />,
     children: [
-      // Public Routes
+      // ✅ Public Routes
       { index: true, element: <Home /> },
       { path: 'all-scholarships', element: <AllScholarships /> },
       { path: 'scholarship-details/:id', element: <ScholarshipDetails /> },
 
-      // Auth Routes
+      // ✅ Auth Routes (Nested under AuthLayout)
       {
         element: <AuthLayout />,
         children: [
@@ -65,10 +66,10 @@ export const router = createBrowserRouter([
         ],
       },
 
-      // Unauthorized Route
-      { path: 'unauthorized', element: <Unauthorized /> },
+      // 🚫 Unauthorized
+      { path: '/unauthorized', element: <Unauthorized /> },
 
-      // Protected Dashboard Routes
+      // ✅ Protected Dashboard
       {
         path: 'dashboard',
         element: (
@@ -77,10 +78,10 @@ export const router = createBrowserRouter([
           </PrivateRoute>
         ),
         children: [
-          // Role-Based Redirect on /dashboard
+          // 🔁 Redirect based on Role
           { index: true, element: <DashboardRedirect /> },
 
-          // 👤 User Dashboard
+          // 👤 User
           {
             path: 'user',
             element: (
@@ -95,7 +96,7 @@ export const router = createBrowserRouter([
             ],
           },
 
-          // 🛡 Admin Dashboard
+          // 🛡 Admin
           {
             path: 'admin',
             element: (
@@ -113,7 +114,7 @@ export const router = createBrowserRouter([
             ],
           },
 
-          // 🧰 Moderator Dashboard
+          // 🧰 Moderator
           {
             path: 'moderator',
             element: (
@@ -134,6 +135,6 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // Fallback Route
+  // 🧯 Global Fallback
   { path: '*', element: <Navigate to="/" replace /> },
 ]);
