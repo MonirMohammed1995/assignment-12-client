@@ -17,7 +17,7 @@ const ManageScholarships = () => {
   const handleDelete = (id) => {
     Swal.fire({
       title: 'Are you sure?',
-      text: 'You won\'t be able to revert this!',
+      text: "You won't be able to revert this!",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Yes, delete it!',
@@ -36,21 +36,21 @@ const ManageScholarships = () => {
   };
 
   const handleEdit = () => {
-  fetch(`${api}/scholarships/${editData._id}`, {
-    method: 'PATCH', // 🔁 Changed from PUT to PATCH
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(editData),
-  })
-    .then(res => res.json())
-    .then(() => {
-      Swal.fire('Updated!', 'Scholarship has been updated.', 'success');
-      setSelected(null);
-      setEditData({});
-      fetch(`${api}/scholarships`)
-        .then(res => res.json())
-        .then(data => setScholarships(data));
-    });
-};
+    fetch(`${api}/scholarships/${editData._id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editData),
+    })
+      .then(res => res.json())
+      .then(() => {
+        Swal.fire('Updated!', 'Scholarship has been updated.', 'success');
+        setSelected(null);
+        setEditData({});
+        fetch(`${api}/scholarships`)
+          .then(res => res.json())
+          .then(data => setScholarships(data));
+      });
+  };
 
   return (
     <div className="p-6">
@@ -106,7 +106,7 @@ const ManageScholarships = () => {
 
       {/* Detail Modal */}
       {selected && selected !== 'edit' && (
-        <div className="fixed inset-0 hero hero-overlay flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-lg">
             <h3 className="text-xl font-bold mb-4">Scholarship Details</h3>
             <p><strong>Name:</strong> {selected.scholarshipName}</p>
@@ -126,7 +126,7 @@ const ManageScholarships = () => {
 
       {/* Edit Modal */}
       {selected === 'edit' && (
-        <div className="fixed inset-0 hero hero-overlay flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-lg">
             <h3 className="text-xl font-bold mb-4">Edit Scholarship</h3>
             <input
