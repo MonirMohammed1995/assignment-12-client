@@ -1,168 +1,177 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import Swal from 'sweetalert2';
-import { Link, useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+import { Link } from 'react-router-dom';
 import { AuthContext } from '../../../context/AuthProvider';
 
 const MyApplications = () => {
   const { user } = useContext(AuthContext);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [selectedApp, setSelectedApp] = useState(null);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const api = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    if (user?.email) {
-      const api = import.meta.env.VITE_API_URL;
-      fetch(`${api}/applications?email=${user.email}`)
-        .then(res => res.json())
-        .then(data => {
-          setApplications(data);
-          setLoading(false);
-        });
-    }
-  }, [user]);
+    if (!user?.email) return;
+    setLoading(true);
+    fetch(`${api}/applications?email=${user.email}`)
+      .then(res => res.json())
+      .then(data => setApplications(data))
+      .catch(() => Swal.fire('Error', 'Failed to load applications', 'error'))
+      .finally(() => setLoading(false));
+  }, [user, api]);
 
-  const handleCancel = (id) => {
-    Swal.fire({
+  const handleCancel = async (id) => {
+    const confirm = await Swal.fire({
       title: 'Are you sure?',
       text: 'You want to cancel this application?',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Yes, cancel it!'
-    }).then(result => {
-      if (result.isConfirmed) {
-        const api = import.meta.env.VITE_API_URL;
-        fetch(`${api}/applications/${id}`, {
-          method: 'DELETE'
-        })
-          .then(res => res.json())
-          .then(() => {
-            Swal.fire('Canceled!', 'Your application has been canceled.', 'success');
-            setApplications(applications.filter(app => app._id !== id));
-          });
-      }
+      confirmButtonText: 'Yes, cancel it!',
     });
-  };
+    if (!confirm.isConfirmed) return;
 
-  const handleEdit = (application) => {
-    if (application.status !== 'pending') {
-      return Swal.fire('Cannot Edit', 'This application is already processing or completed.', 'error');
+    try {
+      const res = await fetch(`${api}/applications/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'Rejected' }),
+      });
+      if (!res.ok) throw new Error('Failed to cancel');
+      setApplications(apps =>
+        apps.map(app => (app._id === id ? { ...app, status: 'Rejected' } : app))
+      );
+      Swal.fire('Canceled!', 'Application has been canceled.', 'success');
+    } catch {
+      Swal.fire('Error', 'Failed to cancel application.', 'error');
     }
-    navigate(`/dashboard/edit-application/${application._id}`);
   };
 
-  const handleReview = (application) => {
-    Swal.fire({
-      title: 'Submit Review',
-      html:
-        '<input id="rating" type="number" min="1" max="5" class="swal2-input" placeholder="Rating (1-5)" />' +
-        '<textarea id="comment" class="swal2-textarea" placeholder="Your comment"></textarea>' +
-        `<p class="text-sm mt-2 text-left">Scholarship: <strong>${application.scholarshipName}</strong></p>` +
-        `<p class="text-sm text-left">University: <strong>${application.universityName}</strong></p>`,
-      focusConfirm: false,
-      showCancelButton: true,
-      preConfirm: () => {
-        const rating = document.getElementById('rating').value;
-        const comment = document.getElementById('comment').value;
-        if (!rating || !comment) {
-          Swal.showValidationMessage('Please fill in both rating and comment');
-        }
-        return { rating, comment };
-      }
-    }).then(result => {
-      if (result.isConfirmed) {
-        const review = {
-          rating: result.value.rating,
-          comment: result.value.comment,
-          date: new Date().toISOString(),
-          scholarshipName: application.scholarshipName,
-          universityName: application.universityName,
-          universityId: application.universityId,
-          userName: user.displayName,
-          userEmail: user.email,
-          userImage: user.photoURL || ''
-        };
-
-        const api = import.meta.env.VITE_API_URL;
-        fetch(`${api}/reviews`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(review)
-        })
-          .then(res => res.json())
-          .then(() => Swal.fire('Thank you!', 'Your review has been submitted.', 'success'));
-      }
-    });
+  const handleEdit = (status) => {
+    if (status !== 'pending') {
+      return Swal.fire('Not Allowed', 'Cannot edit once application is processing/completed.', 'warning');
+    }
+    // TODO: Add navigation to edit page here
   };
 
-  if (loading) {
-    return <div className="text-center py-10 text-lg">Loading applications...</div>;
-  }
+  const openReviewModal = (app) => {
+    setSelectedApp(app);
+    setReviewModalOpen(true);
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const review = {
+      scholarshipId: selectedApp.scholarshipId,
+      universityId: selectedApp.universityId,
+      scholarshipName: selectedApp.scholarshipName,
+      universityName: selectedApp.universityName,
+      reviewerName: user?.displayName || 'Anonymous',
+      reviewerEmail: user?.email,
+      reviewerImage: user?.photoURL || '',
+      rating: parseInt(form.rating.value, 10),
+      comment: form.comment.value.trim(),
+      date: format(new Date(), 'PPP'),
+    };
+
+    try {
+      const res = await fetch(`${api}/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(review),
+      });
+      if (!res.ok) throw new Error('Submit failed');
+      Swal.fire('Success', 'Review submitted!', 'success');
+      setReviewModalOpen(false);
+    } catch {
+      Swal.fire('Error', 'Failed to submit review.', 'error');
+    }
+  };
+
+  if (loading) return <div className="text-center py-6 text-gray-600">Loading applications...</div>;
+
+  if (applications.length === 0)
+    return <div className="text-center py-6 text-gray-600">No applications found.</div>;
 
   return (
-    <div className="p-6 bg-white shadow rounded-xl overflow-x-auto">
-      <h2 className="text-2xl font-semibold mb-4">My Applications</h2>
-      {applications.length === 0 ? (
-        <p className="text-gray-600">You haven't applied for any scholarships yet.</p>
-      ) : (
-        <table className="w-full text-left border-collapse">
+    <div className="max-w-7xl mx-auto px-4 py-6">
+      <h2 className="text-3xl font-semibold mb-6 text-gray-900">🎓 My Applications</h2>
+      <div className="overflow-x-auto">
+        <table className="min-w-full table-auto border-collapse border border-gray-200">
           <thead>
-            <tr className="bg-indigo-100 text-indigo-700">
-              <th className="p-3 border">University</th>
-              <th className="p-3 border">Address</th>
-              <th className="p-3 border">Feedback</th>
-              <th className="p-3 border">Category</th>
-              <th className="p-3 border">Degree</th>
-              <th className="p-3 border">Fees</th>
-              <th className="p-3 border">Service</th>
-              <th className="p-3 border">Status</th>
-              <th className="p-3 border text-center">Actions</th>
+            <tr className="bg-gray-100 text-gray-700">
+              {[
+                'University',
+                'Feedback',
+                'Subject',
+                'Degree',
+                'Fee',
+                'Service',
+                'Status',
+                'Actions',
+              ].map((head) => (
+                <th key={head} className="border border-gray-300 px-4 py-2 text-left">
+                  {head}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {applications.map(app => (
-              <tr key={app._id} className="hover:bg-indigo-50 transition">
-                <td className="p-3 border">{app.universityName || 'N/A'}</td>
-                <td className="p-3 border">{app.universityAddress || 'N/A'}</td>
-                <td className="p-3 border">{app.feedback || 'N/A'}</td>
-                <td className="p-3 border">{app.subjectCategory || 'N/A'}</td>
-                <td className="p-3 border">{app.appliedDegree || 'N/A'}</td>
-                <td className="p-3 border">${app.applicationFee || 0}</td>
-                <td className="p-3 border">${app.serviceCharge || 0}</td>
-                <td className="p-3 border">
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    app.status === 'pending'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : app.status === 'processing'
-                      ? 'bg-blue-100 text-blue-800'
-                      : app.status === 'completed'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}>
+            {applications.map((app) => (
+              <tr
+                key={app._id}
+                className="hover:bg-gray-50 border border-gray-300"
+                aria-label={`Application to ${app.universityName}`}
+              >
+                <td className="px-4 py-3 whitespace-nowrap max-w-xs">
+                  <p className="font-medium text-gray-900">{app.universityName}</p>
+                  <p className="text-sm text-gray-500">{app.universityAddress}</p>
+                </td>
+                <td className="px-4 py-3">{app.feedback || 'N/A'}</td>
+                <td className="px-4 py-3">{app.subjectCategory}</td>
+                <td className="px-4 py-3">{app.appliedDegree}</td>
+                <td className="px-4 py-3">{app.applicationFees}৳</td>
+                <td className="px-4 py-3">{app.serviceCharge}৳</td>
+                <td className="px-4 py-3">
+                  <span
+                    className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                      app.status === 'Rejected'
+                        ? 'bg-red-100 text-red-700'
+                        : 'bg-blue-100 text-blue-700'
+                    }`}
+                    aria-label={`Status: ${app.status}`}
+                  >
                     {app.status}
                   </span>
                 </td>
-                <td className="p-3 border text-center space-x-2">
+                <td className="px-4 py-3 space-x-2">
                   <Link
-                    to={`/scholarship/${app.scholarshipId}`}
-                    className="text-sm px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    to={`/scholarships/${app.scholarshipId}`}
+                    className="btn btn-sm btn-info"
+                    aria-label={`View details of ${app.scholarshipName}`}
                   >
                     Details
                   </Link>
                   <button
-                    onClick={() => handleEdit(app)}
-                    className="text-sm px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                    onClick={() => handleEdit(app.status)}
+                    className="btn btn-sm btn-warning"
+                    aria-label={`Edit application with status ${app.status}`}
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleCancel(app._id)}
-                    className="text-sm px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                    className="btn btn-sm btn-error"
+                    aria-label="Cancel application"
                   >
                     Cancel
                   </button>
                   <button
-                    onClick={() => handleReview(app)}
-                    className="text-sm px-3 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600"
+                    onClick={() => openReviewModal(app)}
+                    className="btn btn-sm btn-success"
+                    aria-label="Submit a review"
                   >
                     Review
                   </button>
@@ -171,6 +180,60 @@ const MyApplications = () => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Review Modal */}
+      {reviewModalOpen && selectedApp && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="review-modal-title"
+        >
+          <form
+            onSubmit={handleReviewSubmit}
+            className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg space-y-4"
+          >
+            <h3 id="review-modal-title" className="text-xl font-semibold text-gray-900">
+              Submit Review for {selectedApp.scholarshipName}
+            </h3>
+            <label htmlFor="rating" className="block font-medium text-gray-700">
+              Rating (1-5)
+            </label>
+            <input
+              id="rating"
+              name="rating"
+              type="number"
+              min={1}
+              max={5}
+              required
+              className="input input-bordered w-full"
+            />
+            <label htmlFor="comment" className="block font-medium text-gray-700">
+              Comment
+            </label>
+            <textarea
+              id="comment"
+              name="comment"
+              rows={4}
+              required
+              className="textarea textarea-bordered w-full resize-none"
+              placeholder="Write your comment here..."
+            />
+            <div className="flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={() => setReviewModalOpen(false)}
+                className="btn btn-outline"
+              >
+                Cancel
+              </button>
+              <button type="submit" className="btn btn-primary">
+                Submit
+              </button>
+            </div>
+          </form>
+        </div>
       )}
     </div>
   );

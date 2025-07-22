@@ -109,12 +109,6 @@ const ScholarshipDetails = () => {
         </div>
       </div>
 
-      {/* === Description Section === */}
-      <section className="mt-10">
-        <h3 className="text-2xl font-semibold mb-4">📝 Scholarship Description</h3>
-        <p className="text-gray-700 leading-relaxed text-justify">{description || 'No description available.'}</p>
-      </section>
-
       {/* === Reviews Section === */}
       <section className="mt-10">
         <h3 className="text-2xl font-semibold mb-4">🗣️ Student Reviews</h3>

@@ -1,4 +1,3 @@
-// src/routes/router.jsx
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 
 // Layouts
@@ -46,6 +45,10 @@ import UserRoute from './UserRoute';
 // Dashboard Redirect (based on role)
 import DashboardRedirect from '../pages/Dashboard/DashboardRedirect';
 
+// Payment Pages
+import Checkout from '../pages/Payment/Checkout';
+import PaymentSuccess from '../pages/Payment/PaymentSuccess';
+
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -66,6 +69,28 @@ export const router = createBrowserRouter([
         ],
       },
 
+      // ✅ Payment Routes (Only for User Role)
+      {
+        path: 'checkout/:id',
+        element: (
+          <PrivateRoute>
+            <UserRoute>
+              <Checkout />
+            </UserRoute>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: 'payment-success/:tranId',
+        element: (
+          <PrivateRoute>
+            <UserRoute>
+              <PaymentSuccess />
+            </UserRoute>
+          </PrivateRoute>
+        ),
+      },
+
       // 🚫 Unauthorized
       { path: '/unauthorized', element: <Unauthorized /> },
 
@@ -81,7 +106,7 @@ export const router = createBrowserRouter([
           // 🔁 Redirect based on Role
           { index: true, element: <DashboardRedirect /> },
 
-          // 👤 User
+          // 👤 User Dashboard
           {
             path: 'user',
             element: (
@@ -96,7 +121,7 @@ export const router = createBrowserRouter([
             ],
           },
 
-          // 🛡 Admin
+          // 🛡 Admin Dashboard
           {
             path: 'admin',
             element: (
@@ -114,7 +139,7 @@ export const router = createBrowserRouter([
             ],
           },
 
-          // 🧰 Moderator
+          // 🧰 Moderator Dashboard
           {
             path: 'moderator',
             element: (
@@ -135,6 +160,6 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // 🧯 Global Fallback
+  // 🌐 Global Fallback
   { path: '*', element: <Navigate to="/" replace /> },
 ]);

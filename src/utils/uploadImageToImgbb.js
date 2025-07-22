@@ -1,4 +1,3 @@
-// src/utils/uploadImageToImgbb.js
 export const uploadImageToImgbb = async (imageFile) => {
   const formData = new FormData();
   formData.append('image', imageFile);

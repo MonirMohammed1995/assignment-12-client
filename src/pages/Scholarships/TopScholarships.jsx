@@ -87,7 +87,7 @@ const TopScholarships = () => {
                   {averageRating}
                 </p>
                 <div className="card-actions justify-end mt-3">
-                  <Link to={`/scholarship/${item._id}`}>
+                  <Link to={`/scholarship-details/${item._id}`}>
                     <button className="btn btn-sm btn-outline btn-primary hover:btn-primary">
                       View Details
                     </button>
