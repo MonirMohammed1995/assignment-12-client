@@ -4,6 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 
 const TopScholarships = () => {
   const [scholarships, setScholarships] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(6);
 
   useEffect(() => {
     const api = import.meta.env.VITE_API_URL;
@@ -21,10 +22,18 @@ const TopScholarships = () => {
           return feeA === feeB ? dateB - dateA : feeA - feeB;
         });
 
-        setScholarships(sorted.slice(0, 6)); // Only top 6
+        setScholarships(sorted);
       })
       .catch((err) => console.error("Error loading scholarships:", err));
   }, []);
+
+  // Show scholarships according to visibleCount
+  const visibleScholarships = scholarships.slice(0, visibleCount);
+
+  // Handler for "View More"
+  const handleViewMore = () => {
+    setVisibleCount((prev) => prev + 6);
+  };
 
   return (
     <section className="py-12 px-4 max-w-7xl mx-auto">
@@ -33,7 +42,7 @@ const TopScholarships = () => {
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {scholarships.map((item) => {
+        {visibleScholarships.map((item) => {
           const deadline = new Date(item.deadline);
           const deadlineText = !isNaN(deadline.getTime())
             ? formatDistanceToNow(deadline, { addSuffix: true })
@@ -99,9 +108,20 @@ const TopScholarships = () => {
         })}
       </div>
 
-      {/* See All Button */}
-      <div className="flex justify-center mt-10">
-        <Link to="/scholarships">
+      {/* Buttons */}
+      <div className="flex flex-col items-center mt-10 space-y-4">
+        {visibleCount < scholarships.length ? (
+          <button
+            onClick={handleViewMore}
+            className="btn btn-outline btn-primary"
+          >
+            View More
+          </button>
+        ) : (
+          <span className="text-sm text-gray-500">No more scholarships</span>
+        )}
+
+        <Link to="/all-scholarships">
           <button className="btn btn-primary btn-wide">
             See All Scholarships
           </button>

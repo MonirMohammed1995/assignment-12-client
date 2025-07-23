@@ -34,6 +34,21 @@ const AddScholarship = () => {
       return Swal.fire('❗ Please upload an image first');
     }
 
+    // Check selects for placeholder value "default"
+    const subjectCategory = form.subjectCategory.value;
+    const scholarshipCategory = form.scholarshipCategory.value;
+    const degree = form.degree.value;
+
+    if (
+      subjectCategory === 'default' ||
+      scholarshipCategory === 'default' ||
+      degree === 'default'
+    ) {
+      return Swal.fire('⚠️ Please select all dropdown values properly');
+    }
+
+    // You can add more validation here if needed (e.g. trimming strings, etc.)
+
     const scholarship = {
       scholarshipName: form.scholarshipName.value,
       universityName: form.universityName.value,
@@ -41,9 +56,9 @@ const AddScholarship = () => {
       universityCountry: form.universityCountry.value,
       universityCity: form.universityCity.value,
       worldRank: form.worldRank.value,
-      subjectCategory: form.subjectCategory.value,
-      scholarshipCategory: form.scholarshipCategory.value,
-      degree: form.degree.value,
+      subjectCategory,
+      scholarshipCategory,
+      degree,
       tuitionFees: form.tuitionFees.value || 'N/A',
       applicationFees: form.applicationFees.value,
       serviceCharge: form.serviceCharge.value,
@@ -98,22 +113,22 @@ const AddScholarship = () => {
         <input name="universityCity" placeholder="City" required className="input input-bordered" />
         <input name="worldRank" placeholder="World Rank" required className="input input-bordered" />
 
-        <select name="subjectCategory" required className="select select-bordered">
-          <option disabled selected>Select Subject Category</option>
+        <select name="subjectCategory" required defaultValue="default" className="select select-bordered">
+          <option value="default" disabled>Select Subject Category</option>
           <option>Agriculture</option>
           <option>Engineering</option>
           <option>Doctor</option>
         </select>
 
-        <select name="scholarshipCategory" required className="select select-bordered">
-          <option disabled selected>Select Scholarship Type</option>
+        <select name="scholarshipCategory" required defaultValue="default" className="select select-bordered">
+          <option value="default" disabled>Select Scholarship Type</option>
           <option>Full fund</option>
           <option>Partial</option>
           <option>Self-fund</option>
         </select>
 
-        <select name="degree" required className="select select-bordered">
-          <option disabled selected>Select Degree</option>
+        <select name="degree" required defaultValue="default" className="select select-bordered">
+          <option value="default" disabled>Select Degree</option>
           <option>Diploma</option>
           <option>Bachelor</option>
           <option>Masters</option>

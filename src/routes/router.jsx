@@ -13,6 +13,8 @@ import Unauthorized from '../pages/Error/Unauthorized';
 import Home from '../pages/Home/Home';
 import AllScholarships from '../pages/Scholarships/AllScholarships';
 import ScholarshipDetails from '../pages/Scholarships/ScholarshipDetails';
+
+// Auth Pages
 import Login from '../pages/Auth/Login';
 import Register from '../pages/Auth/Register';
 
@@ -42,12 +44,12 @@ import AdminRoute from './AdminRoute';
 import ModeratorRoute from './ModeratorRoute';
 import UserRoute from './UserRoute';
 
-// Dashboard Redirect (based on role)
-import DashboardRedirect from '../pages/Dashboard/DashboardRedirect';
-
 // Payment Pages
 import Checkout from '../pages/Payment/Checkout';
 import PaymentSuccess from '../pages/Payment/PaymentSuccess';
+
+// Role-based redirect
+import DashboardRedirect from '../pages/Dashboard/DashboardRedirect';
 
 export const router = createBrowserRouter([
   {
@@ -60,7 +62,7 @@ export const router = createBrowserRouter([
       { path: 'all-scholarships', element: <AllScholarships /> },
       { path: 'scholarship-details/:id', element: <ScholarshipDetails /> },
 
-      // ✅ Auth Routes (Nested under AuthLayout)
+      // ✅ Auth Routes
       {
         element: <AuthLayout />,
         children: [
@@ -69,7 +71,7 @@ export const router = createBrowserRouter([
         ],
       },
 
-      // ✅ Payment Routes (Only for User Role)
+      // ✅ Payment Routes (Protected for User)
       {
         path: 'checkout/:id',
         element: (
@@ -91,10 +93,10 @@ export const router = createBrowserRouter([
         ),
       },
 
-      // 🚫 Unauthorized
-      { path: '/unauthorized', element: <Unauthorized /> },
+      // 🚫 Unauthorized Page
+      { path: 'unauthorized', element: <Unauthorized /> },
 
-      // ✅ Protected Dashboard
+      // ✅ Protected Dashboard Layout
       {
         path: 'dashboard',
         element: (
@@ -103,17 +105,13 @@ export const router = createBrowserRouter([
           </PrivateRoute>
         ),
         children: [
-          // 🔁 Redirect based on Role
+          // 🔁 Role-based Dashboard Redirect
           { index: true, element: <DashboardRedirect /> },
 
           // 👤 User Dashboard
           {
             path: 'user',
-            element: (
-              <UserRoute>
-                <Outlet />
-              </UserRoute>
-            ),
+            element: <UserRoute><Outlet /></UserRoute>,
             children: [
               { index: true, element: <MyProfile /> },
               { path: 'my-applications', element: <MyApplications /> },
@@ -124,11 +122,7 @@ export const router = createBrowserRouter([
           // 🛡 Admin Dashboard
           {
             path: 'admin',
-            element: (
-              <AdminRoute>
-                <Outlet />
-              </AdminRoute>
-            ),
+            element: <AdminRoute><Outlet /></AdminRoute>,
             children: [
               { index: true, element: <AdminProfile /> },
               { path: 'add-scholarship', element: <AddScholarship /> },
@@ -142,11 +136,7 @@ export const router = createBrowserRouter([
           // 🧰 Moderator Dashboard
           {
             path: 'moderator',
-            element: (
-              <ModeratorRoute>
-                <Outlet />
-              </ModeratorRoute>
-            ),
+            element: <ModeratorRoute><Outlet /></ModeratorRoute>,
             children: [
               { index: true, element: <ModeratorProfile /> },
               { path: 'add-scholarship', element: <AddScholarshipModerator /> },
@@ -160,6 +150,6 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // 🌐 Global Fallback
+  // 🔁 Global fallback
   { path: '*', element: <Navigate to="/" replace /> },
 ]);

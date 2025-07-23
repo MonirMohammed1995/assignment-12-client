@@ -105,7 +105,7 @@ const ManageScholarship = () => {
 
       {/* View Modal */}
       {selected && selected !== 'edit' && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+        <div className="fixed inset-0 hero hero-overlay flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg">
             <h3 className="text-xl font-semibold mb-4">Scholarship Details</h3>
             <p><strong>Name:</strong> {selected.scholarshipName}</p>
@@ -126,7 +126,7 @@ const ManageScholarship = () => {
 
       {/* Edit Modal */}
       {selected === 'edit' && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+        <div className="fixed inset-0 hero hero-overlay flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg">
             <h3 className="text-xl font-semibold mb-4">Edit Scholarship</h3>
             <input

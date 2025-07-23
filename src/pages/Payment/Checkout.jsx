@@ -33,12 +33,14 @@ const Checkout = () => {
     e.preventDefault();
     if (!photoFile) return toast.error('Please upload a photo');
 
+    let loadingToast;
     try {
-      toast.loading('Uploading photo...');
+      loadingToast = toast.loading('Uploading photo...');
       const photoURL = await uploadImageToImgbb(photoFile);
-      toast.dismiss();
+      toast.dismiss(loadingToast);
       toast.success('Photo uploaded!');
 
+      // Prepare application data to send to backend & embed in Stripe metadata
       const applicationData = {
         ...formData,
         photo: photoURL,
@@ -47,8 +49,8 @@ const Checkout = () => {
         userName: user?.name,
         scholarshipId: scholarship?._id,
         scholarshipCategory: scholarship?.category,
-        subjectCategory: scholarship?.subject,
-        universityName: scholarship?.university,
+        subjectCategory: scholarship?.subjectCategory,
+        universityName: scholarship?.universityName,
         appliedAt: new Date().toISOString(),
       };
 
@@ -59,12 +61,13 @@ const Checkout = () => {
       });
 
       if (res?.data?.url) {
-        window.location.href = res.data.url;
+        // Redirect to Stripe checkout page with scholarshipId as query param for confirmation page
+        window.location.href = `${res.data.url}&scholarshipId=${scholarship?._id}`;
       } else {
-        toast.error('Failed to redirect to Stripe');
+        toast.error('Failed to redirect to payment gateway');
       }
     } catch (err) {
-      toast.dismiss();
+      toast.dismiss(loadingToast);
       toast.error('Submission failed');
       console.error(err);
     }
@@ -160,7 +163,7 @@ const Checkout = () => {
               className="input input-bordered w-full bg-gray-100"
             />
             <input
-              value={scholarship?.SubjectCategory || ''}
+              value={scholarship?.subjectCategory || ''}
               readOnly
               className="input input-bordered w-full bg-gray-100"
             />

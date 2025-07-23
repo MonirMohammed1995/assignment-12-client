@@ -30,24 +30,60 @@ const AddScholarships = () => {
     e.preventDefault();
     const form = e.target;
 
-    if (!imageURL) {
-      return Swal.fire('❗ Please upload an image first');
+    // Check image
+    if (!imageURL) return Swal.fire('❗ Please upload an image first');
+
+    // Get values
+    const scholarshipName = form.scholarshipName.value.trim();
+    const universityName = form.universityName.value.trim();
+    const universityCountry = form.universityCountry.value.trim();
+    const universityCity = form.universityCity.value.trim();
+    const worldRank = form.worldRank.value.trim();
+    const subjectCategory = form.subjectCategory.value;
+    const scholarshipCategory = form.scholarshipCategory.value;
+    const degree = form.degree.value;
+    const tuitionFees = form.tuitionFees.value.trim();
+    const applicationFees = form.applicationFees.value.trim();
+    const serviceCharge = form.serviceCharge.value.trim();
+    const deadline = form.deadline.value;
+
+    // Validate selects
+    if (
+      subjectCategory === 'default' ||
+      scholarshipCategory === 'default' ||
+      degree === 'default'
+    ) {
+      return Swal.fire('⚠️ Please select all dropdown values properly');
+    }
+
+    // Validate required inputs
+    if (
+      !scholarshipName ||
+      !universityName ||
+      !universityCountry ||
+      !universityCity ||
+      !worldRank ||
+      !applicationFees ||
+      !serviceCharge ||
+      !deadline
+    ) {
+      return Swal.fire('⚠️ Please fill in all required fields');
     }
 
     const scholarship = {
-      scholarshipName: form.scholarshipName.value,
-      universityName: form.universityName.value,
+      scholarshipName,
+      universityName,
       universityImage: imageURL,
-      universityCountry: form.universityCountry.value,
-      universityCity: form.universityCity.value,
-      worldRank: form.worldRank.value,
-      subjectCategory: form.subjectCategory.value,
-      scholarshipCategory: form.scholarshipCategory.value,
-      degree: form.degree.value,
-      tuitionFees: form.tuitionFees.value || 'N/A',
-      applicationFees: form.applicationFees.value,
-      serviceCharge: form.serviceCharge.value,
-      deadline: form.deadline.value,
+      universityCountry,
+      universityCity,
+      worldRank,
+      subjectCategory,
+      scholarshipCategory,
+      degree,
+      tuitionFees: tuitionFees || 'N/A',
+      applicationFees,
+      serviceCharge,
+      deadline,
       postDate: new Date().toISOString(),
       email: user?.email || 'unknown',
     };
@@ -82,6 +118,7 @@ const AddScholarships = () => {
             accept="image/*"
             onChange={(e) => setImageFile(e.target.files[0])}
             className="file-input w-full"
+            required
           />
           <button
             type="button"
@@ -98,22 +135,22 @@ const AddScholarships = () => {
         <input name="universityCity" placeholder="City" required className="input input-bordered" />
         <input name="worldRank" placeholder="World Rank" required className="input input-bordered" />
 
-        <select name="subjectCategory" required className="select select-bordered">
-          <option disabled selected>Select Subject Category</option>
+        <select name="subjectCategory" required defaultValue="default" className="select select-bordered">
+          <option value="default" disabled>Select Subject Category</option>
           <option>Agriculture</option>
           <option>Engineering</option>
           <option>Doctor</option>
         </select>
 
-        <select name="scholarshipCategory" required className="select select-bordered">
-          <option disabled selected>Select Scholarship Type</option>
+        <select name="scholarshipCategory" required defaultValue="default" className="select select-bordered">
+          <option value="default" disabled>Select Scholarship Type</option>
           <option>Full fund</option>
           <option>Partial</option>
           <option>Self-fund</option>
         </select>
 
-        <select name="degree" required className="select select-bordered">
-          <option disabled selected>Select Degree</option>
+        <select name="degree" required defaultValue="default" className="select select-bordered">
+          <option value="default" disabled>Select Degree</option>
           <option>Diploma</option>
           <option>Bachelor</option>
           <option>Masters</option>

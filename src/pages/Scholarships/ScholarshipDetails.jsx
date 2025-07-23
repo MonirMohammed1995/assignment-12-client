@@ -20,11 +20,15 @@ const ScholarshipDetails = () => {
 
   useEffect(() => {
     const fetchScholarshipData = async () => {
-      try {
-        const [scholarshipRes, reviewsRes] = await Promise.all([
-          fetch(`${api}/scholarships/${id}`),
-          fetch(`${api}/reviews/${id}`),
-        ]);
+  try {
+    const [scholarshipRes, reviewsRes] = await Promise.all([
+      fetch(`${api}/scholarships/${id}`),
+      fetch(`${api}/reviews/scholarship/${id}`), // <-- ✅ FIXED
+    ]);
+
+
+        if (!scholarshipRes.ok) throw new Error('Scholarship not found');
+        if (!reviewsRes.ok) throw new Error('Reviews not found');
 
         const scholarshipData = await scholarshipRes.json();
         const reviewData = await reviewsRes.json();
@@ -37,8 +41,8 @@ const ScholarshipDetails = () => {
           setAvgRating((total / reviewData.length).toFixed(1));
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
-        Swal.fire('Error', 'Failed to load scholarship details.', 'error');
+        console.error('Error fetching data:', error.message);
+        Swal.fire('Error', error.message, 'error');
       } finally {
         setLoading(false);
       }
@@ -52,8 +56,21 @@ const ScholarshipDetails = () => {
     navigate(`/checkout/${id}`);
   };
 
-  if (loading) return <div className="text-center py-10 text-lg font-medium">Loading scholarship details...</div>;
-  if (!scholarship) return <div className="text-center py-10 text-red-600">Scholarship not found.</div>;
+  if (loading) {
+    return (
+      <div className="text-center py-10 text-lg font-medium">
+        Loading scholarship details...
+      </div>
+    );
+  }
+
+  if (!scholarship) {
+    return (
+      <div className="text-center py-10 text-red-600">
+        Scholarship not found.
+      </div>
+    );
+  }
 
   const {
     universityName,
@@ -75,7 +92,7 @@ const ScholarshipDetails = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
-      {/* === Top Section: Scholarship Info === */}
+      {/* === Scholarship Info === */}
       <div className="grid md:grid-cols-2 gap-8 items-center">
         <img
           src={universityImage || '/fallback-university.jpg'}
@@ -90,8 +107,8 @@ const ScholarshipDetails = () => {
             <p><strong>🎓 Scholarship Category:</strong> {scholarshipCategory}</p>
             <p><strong>📚 Subject Category:</strong> {subjectCategory}</p>
             <p><strong>⏳ Deadline:</strong> {formattedDeadline}</p>
-            <p><strong>💰 Application Fees:</strong> {applicationFees || 'Free'} BDT</p>
-            <p><strong>🔧 Service Charge:</strong> {serviceCharge || 'Not specified'} BDT</p>
+            <p><strong>💰 Application Fees:</strong>$ {applicationFees || 'Free'}</p>
+            <p><strong>🔧 Service Charge:</strong>$ {serviceCharge || 'Not specified'}</p>
             <p><strong>🎁 Stipend:</strong> {stipend || 'Not mentioned'}</p>
             <p><strong>📅 Posted On:</strong> {formattedPostDate}</p>
           </div>
@@ -107,6 +124,12 @@ const ScholarshipDetails = () => {
             Apply for Scholarship
           </button>
         </div>
+      </div>
+
+      {/* === Description === */}
+      <div className="mt-10 bg-gray-50 p-6 rounded-xl border text-gray-700 leading-relaxed">
+        <h4 className="text-xl font-semibold mb-3 text-neutral">📄 Scholarship Description</h4>
+        <p>{description || 'No description provided.'}</p>
       </div>
 
       {/* === Reviews Section === */}
@@ -137,7 +160,9 @@ const ScholarshipDetails = () => {
                   />
                   <div>
                     <p className="font-semibold">{rev.reviewerName}</p>
-                    <p className="text-sm text-gray-500">{rev.date}</p>
+                    <p className="text-sm text-gray-500">
+                      {format(new Date(rev.date), 'PPP')}
+                    </p>
                   </div>
                 </div>
                 <p className="text-yellow-500 font-bold">Rating: {rev.rating}/5</p>

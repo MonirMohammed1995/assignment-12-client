@@ -1,238 +1,228 @@
-import React, { useEffect, useState, useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import { AuthContext } from '../../../context/AuthProvider';
 import Swal from 'sweetalert2';
 import { format } from 'date-fns';
-import { Link } from 'react-router-dom';
-import { AuthContext } from '../../../context/AuthProvider';
+import { useNavigate } from 'react-router-dom';
 
 const MyApplications = () => {
-  const { user } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
   const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedApp, setSelectedApp] = useState(null);
-  const [reviewModalOpen, setReviewModalOpen] = useState(false);
-  const api = import.meta.env.VITE_API_URL;
+  const [reviewModal, setReviewModal] = useState(null);
+  const [reviewText, setReviewText] = useState('');
+  const [rating, setRating] = useState(0);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user?.email) return;
-    setLoading(true);
-    fetch(`${api}/applications?email=${user.email}`)
-      .then(res => res.json())
-      .then(data => setApplications(data))
-      .catch(() => Swal.fire('Error', 'Failed to load applications', 'error'))
-      .finally(() => setLoading(false));
-  }, [user, api]);
+    if (user?.email) {
+      fetch(`${import.meta.env.VITE_API_URL}/applications?email=${user.email}`)
+        .then(res => res.json())
+        .then(data => setApplications(data))
+        .catch(err => console.error(err));
+    }
+  }, [user]);
 
   const handleCancel = async (id) => {
-    const confirm = await Swal.fire({
+    const result = await Swal.fire({
       title: 'Are you sure?',
-      text: 'You want to cancel this application?',
+      text: 'This application will be cancelled!',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Yes, cancel it!',
     });
-    if (!confirm.isConfirmed) return;
 
-    try {
-      const res = await fetch(`${api}/applications/${id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'Rejected' }),
-      });
-      if (!res.ok) throw new Error('Failed to cancel');
-      setApplications(apps =>
-        apps.map(app => (app._id === id ? { ...app, status: 'Rejected' } : app))
-      );
-      Swal.fire('Canceled!', 'Application has been canceled.', 'success');
-    } catch {
-      Swal.fire('Error', 'Failed to cancel application.', 'error');
+    if (result.isConfirmed) {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/applications/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'rejected' }),
+        });
+
+        const data = await res.json();
+        if (data.modifiedCount > 0) {
+          Swal.fire('Cancelled!', 'Your application has been cancelled.', 'success');
+          setApplications(prev => prev.map(app => app._id === id ? { ...app, status: 'rejected' } : app));
+        }
+      } catch (error) {
+        console.error(error);
+        Swal.fire('Error!', 'Something went wrong.', 'error');
+      }
     }
   };
 
-  const handleEdit = (status) => {
+  const handleEdit = (status, id) => {
     if (status !== 'pending') {
       return Swal.fire('Not Allowed', 'Cannot edit once application is processing/completed.', 'warning');
     }
-    // TODO: Add navigation to edit page here
+    navigate(`/edit-application/${id}`);
   };
 
-  const openReviewModal = (app) => {
-    setSelectedApp(app);
-    setReviewModalOpen(true);
-  };
+  const handleSubmitReview = async () => {
+    if (!rating || !reviewText || !reviewModal) {
+      return Swal.fire('Error', 'Rating and review text are required.', 'error');
+    }
 
-  const handleReviewSubmit = async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const review = {
-      scholarshipId: selectedApp.scholarshipId,
-      universityId: selectedApp.universityId,
-      scholarshipName: selectedApp.scholarshipName,
-      universityName: selectedApp.universityName,
-      reviewerName: user?.displayName || 'Anonymous',
-      reviewerEmail: user?.email,
-      reviewerImage: user?.photoURL || '',
-      rating: parseInt(form.rating.value, 10),
-      comment: form.comment.value.trim(),
-      date: format(new Date(), 'PPP'),
+    setIsSubmittingReview(true);
+
+    const application = applications.find(app => app._id === reviewModal);
+    const reviewData = {
+      scholarshipId: application.scholarshipId,
+      universityId: application.universityId,
+      scholarshipName: application.scholarshipName,
+      universityName: application.universityName,
+      reviewerName: user.displayName,
+      reviewerEmail: user.email,
+      reviewerImage: user.photoURL,
+      rating,
+      comment: reviewText,
+      date: new Date(),
     };
 
     try {
-      const res = await fetch(`${api}/reviews`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(review),
+        body: JSON.stringify(reviewData),
       });
-      if (!res.ok) throw new Error('Submit failed');
-      Swal.fire('Success', 'Review submitted!', 'success');
-      setReviewModalOpen(false);
-    } catch {
+
+      const data = await res.json();
+      if (data.insertedId) {
+        Swal.fire('Success', 'Review submitted!', 'success');
+        setReviewModal(null);
+        setReviewText('');
+        setRating(0);
+      }
+    } catch (error) {
+      console.error(error);
       Swal.fire('Error', 'Failed to submit review.', 'error');
+    } finally {
+      setIsSubmittingReview(false);
     }
   };
 
-  if (loading) return <div className="text-center py-6 text-gray-600">Loading applications...</div>;
+  if (loading) {
+    return <div className="text-center py-10">Loading...</div>;
+  }
 
-  if (applications.length === 0)
-    return <div className="text-center py-6 text-gray-600">No applications found.</div>;
+  if (!applications.length) {
+    return <div className="text-center py-10">No applications found.</div>;
+  }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
-      <h2 className="text-3xl font-semibold mb-6 text-gray-900">🎓 My Applications</h2>
-      <div className="overflow-x-auto">
-        <table className="min-w-full table-auto border-collapse border border-gray-200">
-          <thead>
-            <tr className="bg-gray-100 text-gray-700">
-              {[
-                'University',
-                'Feedback',
-                'Subject',
-                'Degree',
-                'Fee',
-                'Service',
-                'Status',
-                'Actions',
-              ].map((head) => (
-                <th key={head} className="border border-gray-300 px-4 py-2 text-left">
-                  {head}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {applications.map((app) => (
-              <tr
-                key={app._id}
-                className="hover:bg-gray-50 border border-gray-300"
-                aria-label={`Application to ${app.universityName}`}
-              >
-                <td className="px-4 py-3 whitespace-nowrap max-w-xs">
-                  <p className="font-medium text-gray-900">{app.universityName}</p>
-                  <p className="text-sm text-gray-500">{app.universityAddress}</p>
-                </td>
-                <td className="px-4 py-3">{app.feedback || 'N/A'}</td>
-                <td className="px-4 py-3">{app.subjectCategory}</td>
-                <td className="px-4 py-3">{app.appliedDegree}</td>
-                <td className="px-4 py-3">{app.applicationFees}৳</td>
-                <td className="px-4 py-3">{app.serviceCharge}৳</td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                      app.status === 'Rejected'
-                        ? 'bg-red-100 text-red-700'
-                        : 'bg-blue-100 text-blue-700'
-                    }`}
-                    aria-label={`Status: ${app.status}`}
-                  >
-                    {app.status}
-                  </span>
-                </td>
-                <td className="px-4 py-3 space-x-2">
-                  <Link
-                    to={`/scholarships/${app.scholarshipId}`}
-                    className="btn btn-sm btn-info"
-                    aria-label={`View details of ${app.scholarshipName}`}
-                  >
-                    Details
-                  </Link>
+    <div className="overflow-x-auto mt-5 mb-16">
+      <h2 className="text-2xl font-semibold mb-4 text-center">My Applications</h2>
+      <table className="table w-full">
+        <thead>
+          <tr className="bg-base-200 text-base text-center">
+            <th>#</th>
+            <th>Scholarship</th>
+            <th>University</th>
+            <th>Address</th>
+            <th>Subject</th>
+            <th>Degree</th>
+            <th>Fees</th>
+            <th>Service</th>
+            <th>Status</th>
+            <th>Applied</th>
+            <th className="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {applications.map((app, i) => (
+            <tr key={app._id} className="text-center">
+              <td>{i + 1}</td>
+              <td>{app.scholarshipName}</td>
+              <td>{app.universityName}</td>
+              <td>{app.universityLocation}</td>
+              <td>{app.subjectCategory}</td>
+              <td>{app.appliedDegree}</td>
+              <td>${app.applicationFees}</td>
+              <td>${app.serviceCharge}</td>
+              <td>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                    app.status === 'pending'
+                      ? 'bg-yellow-200 text-yellow-800'
+                      : app.status === 'processing'
+                      ? 'bg-blue-200 text-blue-800'
+                      : app.status === 'completed'
+                      ? 'bg-green-200 text-green-800'
+                      : 'bg-red-200 text-red-800'
+                  }`}
+                >
+                  {app.status}
+                </span>
+              </td>
+              <td>{format(new Date(app.appliedDate), 'PPP')}</td>
+              <td className="flex flex-col sm:flex-row gap-2 justify-center">
+                <button
+                  onClick={() => handleEdit(app.status, app._id)}
+                  className="btn btn-sm btn-warning"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleCancel(app._id)}
+                  className="btn btn-sm btn-error"
+                >
+                  Cancel
+                </button>
+                {app.status === 'completed' && (
                   <button
-                    onClick={() => handleEdit(app.status)}
-                    className="btn btn-sm btn-warning"
-                    aria-label={`Edit application with status ${app.status}`}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleCancel(app._id)}
-                    className="btn btn-sm btn-error"
-                    aria-label="Cancel application"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => openReviewModal(app)}
-                    className="btn btn-sm btn-success"
-                    aria-label="Submit a review"
+                    onClick={() => setReviewModal(app._id)}
+                    className="btn btn-sm btn-primary"
                   >
                     Review
                   </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
       {/* Review Modal */}
-      {reviewModalOpen && selectedApp && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="review-modal-title"
-        >
-          <form
-            onSubmit={handleReviewSubmit}
-            className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg space-y-4"
-          >
-            <h3 id="review-modal-title" className="text-xl font-semibold text-gray-900">
-              Submit Review for {selectedApp.scholarshipName}
-            </h3>
-            <label htmlFor="rating" className="block font-medium text-gray-700">
-              Rating (1-5)
+      {reviewModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full relative">
+            <h3 className="text-lg font-semibold mb-2">Submit Review</h3>
+            <label className="label">
+              <span className="label-text">Rating (1 to 5)</span>
             </label>
             <input
-              id="rating"
-              name="rating"
               type="number"
+              className="input input-bordered w-full"
+              value={rating}
+              onChange={(e) => setRating(Number(e.target.value))}
               min={1}
               max={5}
-              required
-              className="input input-bordered w-full"
             />
-            <label htmlFor="comment" className="block font-medium text-gray-700">
-              Comment
+            <label className="label mt-2">
+              <span className="label-text">Comment</span>
             </label>
             <textarea
-              id="comment"
-              name="comment"
-              rows={4}
-              required
-              className="textarea textarea-bordered w-full resize-none"
-              placeholder="Write your comment here..."
-            />
-            <div className="flex justify-end space-x-3">
+              className="textarea textarea-bordered w-full"
+              rows={3}
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value)}
+            ></textarea>
+            <div className="flex justify-end mt-4 space-x-2">
               <button
-                type="button"
-                onClick={() => setReviewModalOpen(false)}
-                className="btn btn-outline"
+                onClick={() => setReviewModal(null)}
+                className="btn btn-sm"
               >
                 Cancel
               </button>
-              <button type="submit" className="btn btn-primary">
-                Submit
+              <button
+                onClick={handleSubmitReview}
+                disabled={isSubmittingReview}
+                className="btn btn-sm btn-primary"
+              >
+                {isSubmittingReview ? 'Submitting...' : 'Submit'}
               </button>
             </div>
-          </form>
+          </div>
         </div>
       )}
     </div>
