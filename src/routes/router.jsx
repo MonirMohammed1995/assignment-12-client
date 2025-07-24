@@ -1,4 +1,7 @@
+// src/routes/router.js
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
 
 // Layouts
 import Root from '../layouts/Root';
@@ -18,12 +21,12 @@ import ScholarshipDetails from '../pages/Scholarships/ScholarshipDetails';
 import Login from '../pages/Auth/Login';
 import Register from '../pages/Auth/Register';
 
-// User Dashboard Pages
+// User Dashboard
 import MyProfile from '../pages/Dashboard/User/MyProfile';
 import MyApplications from '../pages/Dashboard/User/MyApplications';
 import MyReviews from '../pages/Dashboard/User/MyReviews';
 
-// Admin Dashboard Pages
+// Admin Dashboard
 import AdminProfile from '../pages/Dashboard/Admin/AdminProfile';
 import AddScholarship from '../pages/Dashboard/Admin/AddScholarship';
 import ManageScholarship from '../pages/Dashboard/Admin/ManageScholarship';
@@ -31,7 +34,7 @@ import ManageAppliedApplication from '../pages/Dashboard/Admin/ManageAppliedAppl
 import ManageUsers from '../pages/Dashboard/Admin/ManageUsers';
 import ManageReviews from '../pages/Dashboard/Admin/ManageReviews';
 
-// Moderator Dashboard Pages
+// Moderator Dashboard
 import ModeratorProfile from '../pages/Dashboard/Moderator/ModeratorProfile';
 import AddScholarshipModerator from '../pages/Dashboard/Moderator/AddScholarships';
 import ManageScholarshipsModerator from '../pages/Dashboard/Moderator/ManageScholarships';
@@ -51,18 +54,18 @@ import PaymentSuccess from '../pages/Payment/PaymentSuccess';
 // Role-based redirect
 import DashboardRedirect from '../pages/Dashboard/DashboardRedirect';
 
+const stripePromise = loadStripe(import.meta.env.VITE_PAYMENT_KEY);
+
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <Root />,
     errorElement: <PageNotFound />,
     children: [
-      // ✅ Public Routes
       { index: true, element: <Home /> },
       { path: 'all-scholarships', element: <AllScholarships /> },
       { path: 'scholarship-details/:id', element: <ScholarshipDetails /> },
 
-      // ✅ Auth Routes
       {
         element: <AuthLayout />,
         children: [
@@ -71,19 +74,21 @@ export const router = createBrowserRouter([
         ],
       },
 
-      // ✅ Payment Routes (Protected for User)
+      // ✅ Payment routes
       {
         path: 'checkout/:id',
         element: (
           <PrivateRoute>
             <UserRoute>
-              <Checkout />
+              <Elements stripe={stripePromise}>
+                <Checkout />
+              </Elements>
             </UserRoute>
           </PrivateRoute>
         ),
       },
       {
-        path: 'payment-success/:tranId',
+        path: 'payment-success',
         element: (
           <PrivateRoute>
             <UserRoute>
@@ -93,10 +98,9 @@ export const router = createBrowserRouter([
         ),
       },
 
-      // 🚫 Unauthorized Page
       { path: 'unauthorized', element: <Unauthorized /> },
 
-      // ✅ Protected Dashboard Layout
+      // ✅ Dashboard
       {
         path: 'dashboard',
         element: (
@@ -105,10 +109,8 @@ export const router = createBrowserRouter([
           </PrivateRoute>
         ),
         children: [
-          // 🔁 Role-based Dashboard Redirect
           { index: true, element: <DashboardRedirect /> },
 
-          // 👤 User Dashboard
           {
             path: 'user',
             element: <UserRoute><Outlet /></UserRoute>,
@@ -119,7 +121,6 @@ export const router = createBrowserRouter([
             ],
           },
 
-          // 🛡 Admin Dashboard
           {
             path: 'admin',
             element: <AdminRoute><Outlet /></AdminRoute>,
@@ -133,7 +134,6 @@ export const router = createBrowserRouter([
             ],
           },
 
-          // 🧰 Moderator Dashboard
           {
             path: 'moderator',
             element: <ModeratorRoute><Outlet /></ModeratorRoute>,
@@ -149,7 +149,5 @@ export const router = createBrowserRouter([
       },
     ],
   },
-
-  // 🔁 Global fallback
   { path: '*', element: <Navigate to="/" replace /> },
 ]);

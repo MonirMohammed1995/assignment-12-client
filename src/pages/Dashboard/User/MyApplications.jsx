@@ -154,7 +154,11 @@ const MyApplications = () => {
                   {app.status}
                 </span>
               </td>
-              <td>{format(new Date(app.appliedDate), 'PPP')}</td>
+              <td>
+                {app.appliedDate && !isNaN(new Date(app.appliedDate)) 
+                  ? format(new Date(app.appliedDate), 'PPP') 
+                  : 'N/A'}
+              </td>
               <td className="flex flex-col sm:flex-row gap-2 justify-center">
                 <button
                   onClick={() => handleEdit(app.status, app._id)}

@@ -8,47 +8,69 @@ const ManageUsers = () => {
   const [users, setUsers] = useState([]);
   const [filterRole, setFilterRole] = useState('all');
   const [loading, setLoading] = useState(true);
-  const { role } = useContext(AuthContext);
+  const { role, token } = useContext(AuthContext);
   const api = import.meta.env.VITE_API_URL;
 
   // 🔐 Route Protection
   if (role !== 'admin') return <Navigate to="/unauthorized" />;
 
-  // 📦 Fetch all users
+  // 📦 Fetch all users (inside useEffect)
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch(`${api}/users`);
+        setLoading(true);
+        const res = await fetch(`${api}/users`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) throw new Error('Unauthorized or fetch error');
         const data = await res.json();
-        setUsers(data);
-      } catch (error) {
-        console.error('Failed to fetch users:', error);
-        Swal.fire('Error', 'Could not load users', 'error');
+
+        if (Array.isArray(data)) {
+          setUsers(data);
+        } else {
+          console.warn("Unexpected response format", data);
+          setUsers([]);
+        }
+      } catch (err) {
+        console.error("Fetch error:", err.message);
+        setUsers([]);
       } finally {
         setLoading(false);
       }
     };
+
     fetchUsers();
-  }, [api]);
+  }, [api, token]);
 
   // ✏️ Role Change
   const handleRoleChange = async (id, newRole) => {
-    const res = await fetch(`${api}/users/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: newRole }),
-    });
-    const result = await res.json();
+    try {
+      const res = await fetch(`${api}/users/${id}/role`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ role: newRole }),
+      });
 
-    if (result.modifiedCount > 0) {
-      setUsers(prev =>
-        prev.map(user =>
-          user._id === id ? { ...user, role: newRole } : user
-        )
-      );
-      Swal.fire('Updated!', `Role changed to "${newRole}"`, 'success');
-    } else {
-      Swal.fire('Error!', 'Failed to update role.', 'error');
+      const result = await res.json();
+
+      if (result.modifiedCount > 0) {
+        setUsers(prev =>
+          prev.map(user =>
+            user._id === id ? { ...user, role: newRole } : user
+          )
+        );
+        Swal.fire('Updated!', `Role changed to "${newRole}"`, 'success');
+      } else {
+        Swal.fire('Error!', 'Failed to update role.', 'error');
+      }
+    } catch (error) {
+      Swal.fire('Error!', 'Something went wrong while updating role.', 'error');
     }
   };
 
@@ -64,14 +86,24 @@ const ManageUsers = () => {
     });
 
     if (confirm.isConfirmed) {
-      const res = await fetch(`${api}/users/${id}`, { method: 'DELETE' });
-      const result = await res.json();
+      try {
+        const res = await fetch(`${api}/users/${id}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      if (result.deletedCount > 0) {
-        setUsers(prev => prev.filter(user => user._id !== id));
-        Swal.fire('Deleted!', 'User has been removed.', 'success');
-      } else {
-        Swal.fire('Error!', 'Failed to delete user.', 'error');
+        const result = await res.json();
+
+        if (result.deletedCount > 0) {
+          setUsers(prev => prev.filter(user => user._id !== id));
+          Swal.fire('Deleted!', 'User has been removed.', 'success');
+        } else {
+          Swal.fire('Error!', 'Failed to delete user.', 'error');
+        }
+      } catch (error) {
+        Swal.fire('Error!', 'Something went wrong while deleting user.', 'error');
       }
     }
   };
@@ -123,7 +155,7 @@ const ManageUsers = () => {
               filteredUsers.map((user, index) => (
                 <tr key={user._id}>
                   <td>{index + 1}</td>
-                  <td className="capitalize">{user.name}</td>
+                  <td className="capitalize">{user.name || 'N/A'}</td>
                   <td>{user.email}</td>
                   <td>
                     <details className="dropdown">

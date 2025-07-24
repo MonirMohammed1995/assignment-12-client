@@ -1,52 +1,42 @@
-import { useEffect, useContext } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import Swal from 'sweetalert2';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
-import { AuthContext } from '../../context/AuthProvider';
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const session_id = searchParams.get('session_id');
-  const scholarshipId = searchParams.get('scholarshipId'); // passed from checkout redirect
-  const { user } = useContext(AuthContext);
+  const paymentIntentId = searchParams.get('paymentIntent');
+
+  const [application, setApplication] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!session_id || !user?.email || !scholarshipId) {
-      navigate('/');
-      return;
-    }
-
-    const verifyAndSubmit = async () => {
-      try {
-        const api = import.meta.env.VITE_API_URL;
-
-        const res = await axios.post(`${api}/payment-success`, {
-          session_id,
-          applicantEmail: user.email,
-          scholarshipId,
-          appliedAt: new Date(),
+    if (paymentIntentId) {
+      axios
+        .get(`${import.meta.env.VITE_API_URL}/applications/payment/${paymentIntentId}`)
+        .then((res) => {
+          setApplication(res.data);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setLoading(false);
         });
+    }
+  }, [paymentIntentId]);
 
-        if (res.data.success) {
-          Swal.fire('✅ Success!', 'Your application has been submitted.', 'success');
-        } else {
-          toast.error('Failed to complete application.');
-        }
-      } catch (error) {
-        toast.error('Verification failed');
-        console.error(error);
-      }
-    };
-
-    verifyAndSubmit();
-  }, [session_id, user?.email, scholarshipId, navigate]);
+  if (loading) return <p className="text-center my-10">Loading your application details...</p>;
+  if (!application) return <p className="text-center my-10">Application not found.</p>;
 
   return (
-    <div className="text-center py-20">
-      <h1 className="text-3xl font-bold">🎉 Payment Successful!</h1>
-      <p className="text-lg mt-2">Verifying your payment and submitting your application...</p>
+    <div className="max-w-2xl mx-auto p-6 mt-10 bg-white shadow rounded">
+      <h2 className="text-2xl font-semibold mb-4 text-green-600">🎉 Payment Successful!</h2>
+      <p><strong>University:</strong> {application.university}</p>
+      <p><strong>Scholarship Category:</strong> {application.category}</p>
+      <p><strong>Subject:</strong> {application.subject}</p>
+      <p><strong>Applicant:</strong> {application.userName} ({application.userEmail})</p>
+      <p><strong>Status:</strong> {application.status}</p>
+      <p><strong>Payment Intent:</strong> {application.paymentIntentId}</p>
+      <p><strong>Date:</strong> {new Date(application.createdAt).toLocaleString()}</p>
     </div>
   );
 };
