@@ -68,12 +68,10 @@ const MyApplications = () => {
     const application = applications.find(app => app._id === reviewModal);
     const reviewData = {
       scholarshipId: application.scholarshipId,
-      universityId: application.universityId,
-      scholarshipName: application.scholarshipName,
-      universityName: application.universityName,
-      reviewerName: user.displayName,
+      scholarshipName: application.scholarshipInfo?.subject,
+      universityName: application.scholarshipInfo?.university,
+      reviewerName: user.name,
       reviewerEmail: user.email,
-      reviewerImage: user.photoURL,
       rating,
       comment: reviewText,
       date: new Date(),
@@ -101,13 +99,8 @@ const MyApplications = () => {
     }
   };
 
-  if (loading) {
-    return <div className="text-center py-10">Loading...</div>;
-  }
-
-  if (!applications.length) {
-    return <div className="text-center py-10">No applications found.</div>;
-  }
+  if (loading) return <div className="text-center py-10">Loading...</div>;
+  if (!applications.length) return <div className="text-center py-10">No applications found.</div>;
 
   return (
     <div className="overflow-x-auto mt-5 mb-16">
@@ -116,13 +109,10 @@ const MyApplications = () => {
         <thead>
           <tr className="bg-base-200 text-base text-center">
             <th>#</th>
-            <th>Scholarship</th>
             <th>University</th>
-            <th>Address</th>
             <th>Subject</th>
             <th>Degree</th>
-            <th>Fees</th>
-            <th>Service</th>
+            <th>Fee</th>
             <th>Status</th>
             <th>Applied</th>
             <th className="text-center">Actions</th>
@@ -132,13 +122,10 @@ const MyApplications = () => {
           {applications.map((app, i) => (
             <tr key={app._id} className="text-center">
               <td>{i + 1}</td>
-              <td>{app.scholarshipName}</td>
-              <td>{app.universityName}</td>
-              <td>{app.universityLocation}</td>
-              <td>{app.subjectCategory}</td>
-              <td>{app.appliedDegree}</td>
-              <td>${app.applicationFees}</td>
-              <td>${app.serviceCharge}</td>
+              <td>{app.scholarshipInfo?.university || 'N/A'}</td>
+              <td>{app.scholarshipInfo?.subject || 'N/A'}</td>
+              <td>{app.degree}</td>
+              <td>${app.applicationFees || '0'}</td>
               <td>
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-semibold ${
@@ -155,9 +142,7 @@ const MyApplications = () => {
                 </span>
               </td>
               <td>
-                {app.appliedDate && !isNaN(new Date(app.appliedDate)) 
-                  ? format(new Date(app.appliedDate), 'PPP') 
-                  : 'N/A'}
+                {app.createdAt ? format(new Date(app.createdAt), 'PPP') : 'N/A'}
               </td>
               <td className="flex flex-col sm:flex-row gap-2 justify-center">
                 <button

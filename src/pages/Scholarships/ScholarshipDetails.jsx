@@ -6,6 +6,58 @@ import 'react-multi-carousel/lib/styles.css';
 import Swal from 'sweetalert2';
 import { format } from 'date-fns';
 
+const ReviewModal = ({ onClose, onSubmit }) => {
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+
+  const handleSubmit = () => {
+    if (rating < 1 || rating > 5) {
+      Swal.fire('Oops!', 'Please select a rating between 1 and 5.', 'warning');
+      return;
+    }
+    if (!comment.trim()) {
+      Swal.fire('Oops!', 'Please write a comment.', 'warning');
+      return;
+    }
+    onSubmit({ rating, comment });
+  };
+
+  return (
+    <dialog open className="modal modal-open" aria-modal="true" role="dialog" aria-labelledby="review-modal-title">
+      <div className="modal-box max-w-lg">
+        <h3 id="review-modal-title" className="font-bold text-lg mb-4">Write a Review</h3>
+
+        <label className="block mb-2 font-semibold">Rating:</label>
+        <select
+          className="select select-bordered w-full mb-4"
+          value={rating}
+          onChange={e => setRating(Number(e.target.value))}
+          aria-label="Select rating"
+        >
+          <option value={0} disabled>-- Select rating --</option>
+          {[1,2,3,4,5].map(num => (
+            <option key={num} value={num}>{num} Star{num > 1 ? 's' : ''}</option>
+          ))}
+        </select>
+
+        <label className="block mb-2 font-semibold">Comment:</label>
+        <textarea
+          className="textarea textarea-bordered w-full"
+          rows={4}
+          placeholder="Write your review here..."
+          value={comment}
+          onChange={e => setComment(e.target.value)}
+        />
+
+        <div className="modal-action mt-4">
+          <button className="btn btn-primary" onClick={handleSubmit}>Submit Review</button>
+          <button className="btn" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </dialog>
+  );
+};
+
 const ScholarshipDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -15,17 +67,18 @@ const ScholarshipDetails = () => {
   const [reviews, setReviews] = useState([]);
   const [avgRating, setAvgRating] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   const api = import.meta.env.VITE_API_URL;
 
+  // Fetch scholarship & reviews
   useEffect(() => {
     const fetchScholarshipData = async () => {
-  try {
-    const [scholarshipRes, reviewsRes] = await Promise.all([
-      fetch(`${api}/scholarships/${id}`),
-      fetch(`${api}/reviews/scholarship/${id}`), // <-- ✅ FIXED
-    ]);
-
+      try {
+        const [scholarshipRes, reviewsRes] = await Promise.all([
+          fetch(`${api}/scholarships/${id}`),
+          fetch(`${api}/reviews/scholarship/${id}`),
+        ]);
 
         if (!scholarshipRes.ok) throw new Error('Scholarship not found');
         if (!reviewsRes.ok) throw new Error('Reviews not found');
@@ -39,6 +92,8 @@ const ScholarshipDetails = () => {
         if (reviewData?.length > 0) {
           const total = reviewData.reduce((sum, r) => sum + (parseFloat(r.rating) || 0), 0);
           setAvgRating((total / reviewData.length).toFixed(1));
+        } else {
+          setAvgRating(0);
         }
       } catch (error) {
         console.error('Error fetching data:', error.message);
@@ -54,6 +109,50 @@ const ScholarshipDetails = () => {
   const handleApply = () => {
     if (!user) return navigate('/login');
     navigate(`/checkout/${id}`);
+  };
+
+  // Submit new review to backend
+  const handleReviewSubmit = async ({ rating, comment }) => {
+    if (!user) {
+      Swal.fire('Unauthorized', 'Please login to submit a review.', 'warning');
+      setShowReviewModal(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${api}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add auth token header here if required by your backend
+        },
+        body: JSON.stringify({
+          scholarshipId: id,
+          reviewerName: user.displayName || user.email,
+          reviewerEmail: user.email,
+          reviewerImage: user.photoURL || null,
+          rating,
+          comment,
+          date: new Date().toISOString(),
+        }),
+      });
+
+      if (!res.ok) throw new Error('Failed to submit review.');
+
+      const newReview = await res.json();
+
+      // Update reviews state and avg rating
+      const updatedReviews = [...reviews, newReview];
+      setReviews(updatedReviews);
+      const total = updatedReviews.reduce((sum, r) => sum + (parseFloat(r.rating) || 0), 0);
+      setAvgRating((total / updatedReviews.length).toFixed(1));
+
+      Swal.fire('Thank you!', 'Your review has been submitted.', 'success');
+      setShowReviewModal(false);
+    } catch (error) {
+      console.error('Review submission error:', error);
+      Swal.fire('Error', error.message || 'Failed to submit review.', 'error');
+    }
   };
 
   if (loading) {
@@ -123,6 +222,16 @@ const ScholarshipDetails = () => {
           >
             Apply for Scholarship
           </button>
+
+          {/* New Review Button */}
+          {user && (
+            <button
+              onClick={() => setShowReviewModal(true)}
+              className="mt-3 ml-4 inline-block px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-xl transition duration-200"
+            >
+              Write a Review
+            </button>
+          )}
         </div>
       </div>
 
@@ -174,6 +283,14 @@ const ScholarshipDetails = () => {
           <p className="text-gray-500">No reviews available yet.</p>
         )}
       </section>
+
+      {/* Review Modal */}
+      {showReviewModal && (
+        <ReviewModal
+          onClose={() => setShowReviewModal(false)}
+          onSubmit={handleReviewSubmit}
+        />
+      )}
     </div>
   );
 };
