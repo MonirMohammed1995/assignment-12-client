@@ -8,13 +8,11 @@ const ManageUsers = () => {
   const [users, setUsers] = useState([]);
   const [filterRole, setFilterRole] = useState('all');
   const [loading, setLoading] = useState(true);
-  const { role, token } = useContext(AuthContext);
+  const { role, token, user } = useContext(AuthContext);
   const api = import.meta.env.VITE_API_URL;
 
-  // 🔐 Route Protection
   if (role !== 'admin') return <Navigate to="/unauthorized" />;
 
-  // 📦 Fetch all users (inside useEffect)
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -27,13 +25,7 @@ const ManageUsers = () => {
 
         if (!res.ok) throw new Error('Unauthorized or fetch error');
         const data = await res.json();
-
-        if (Array.isArray(data)) {
-          setUsers(data);
-        } else {
-          console.warn("Unexpected response format", data);
-          setUsers([]);
-        }
+        setUsers(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Fetch error:", err.message);
         setUsers([]);
@@ -45,7 +37,6 @@ const ManageUsers = () => {
     fetchUsers();
   }, [api, token]);
 
-  // ✏️ Role Change
   const handleRoleChange = async (id, newRole) => {
     try {
       const res = await fetch(`${api}/users/${id}/role`, {
@@ -74,8 +65,11 @@ const ManageUsers = () => {
     }
   };
 
-  // 🗑️ Delete User
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, email) => {
+    if (email === user?.email) {
+      return Swal.fire('Warning', 'You cannot delete your own admin account.', 'warning');
+    }
+
     const confirm = await Swal.fire({
       title: 'Are you sure?',
       text: 'This user will be permanently deleted!',
@@ -108,7 +102,6 @@ const ManageUsers = () => {
     }
   };
 
-  // 🔍 Filter Users by Role
   const filteredUsers = useMemo(() => {
     return filterRole === 'all'
       ? users
@@ -117,7 +110,6 @@ const ManageUsers = () => {
 
   return (
     <section className="p-6">
-      {/* Header & Filter */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
         <h2 className="text-3xl font-bold text-primary">Manage Users</h2>
         <select
@@ -132,7 +124,6 @@ const ManageUsers = () => {
         </select>
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto bg-base-100 rounded-xl shadow">
         <table className="table table-zebra">
           <thead className="bg-base-200 text-base font-semibold">
@@ -179,7 +170,7 @@ const ManageUsers = () => {
                   </td>
                   <td className="text-center">
                     <button
-                      onClick={() => handleDelete(user._id)}
+                      onClick={() => handleDelete(user._id, user.email)}
                       className="btn btn-sm btn-error flex items-center gap-1"
                     >
                       <Trash2 size={16} /> Delete

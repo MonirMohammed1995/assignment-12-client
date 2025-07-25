@@ -113,47 +113,51 @@ const ScholarshipDetails = () => {
 
   // Submit new review to backend
   const handleReviewSubmit = async ({ rating, comment }) => {
-    if (!user) {
-      Swal.fire('Unauthorized', 'Please login to submit a review.', 'warning');
-      setShowReviewModal(false);
-      return;
-    }
+  if (!user) {
+    Swal.fire('Unauthorized', 'Please login to submit a review.', 'warning');
+    setShowReviewModal(false);
+    return;
+  }
 
-    try {
-      const res = await fetch(`${api}/reviews`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Add auth token header here if required by your backend
-        },
-        body: JSON.stringify({
-          scholarshipId: id,
-          reviewerName: user.displayName || user.email,
-          reviewerEmail: user.email,
-          reviewerImage: user.photoURL || null,
-          rating,
-          comment,
-          date: new Date().toISOString(),
-        }),
-      });
+  try {
+    const res = await fetch(`${api}/reviews`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // Add auth token header here if your backend uses verifyToken
+      },
+      body: JSON.stringify({
+        scholarshipId: id,
+        scholarshipName: scholarship?.subjectCategory || 'Scholarship', // Optional fallback
+        universityName: scholarship?.universityName || 'University',
+        universityImage: scholarship?.universityImage || '',
+        reviewerName: user.displayName || user.email,
+        reviewerEmail: user.email,
+        reviewerImage: user.photoURL || null,
+        rating,
+        comment,
+        date: new Date().toISOString(),
+      }),
+    });
 
-      if (!res.ok) throw new Error('Failed to submit review.');
+    if (!res.ok) throw new Error('Failed to submit review.');
 
-      const newReview = await res.json();
+    const newReview = await res.json();
 
-      // Update reviews state and avg rating
-      const updatedReviews = [...reviews, newReview];
-      setReviews(updatedReviews);
-      const total = updatedReviews.reduce((sum, r) => sum + (parseFloat(r.rating) || 0), 0);
-      setAvgRating((total / updatedReviews.length).toFixed(1));
+    const updatedReviews = [...reviews, newReview];
+    setReviews(updatedReviews);
 
-      Swal.fire('Thank you!', 'Your review has been submitted.', 'success');
-      setShowReviewModal(false);
-    } catch (error) {
-      console.error('Review submission error:', error);
-      Swal.fire('Error', error.message || 'Failed to submit review.', 'error');
-    }
-  };
+    const total = updatedReviews.reduce((sum, r) => sum + (parseFloat(r.rating) || 0), 0);
+    setAvgRating((total / updatedReviews.length).toFixed(1));
+
+    Swal.fire('Thank you!', 'Your review has been submitted.', 'success');
+    setShowReviewModal(false);
+  } catch (error) {
+    console.error('Review submission error:', error);
+    Swal.fire('Error', error.message || 'Failed to submit review.', 'error');
+  }
+};
+
 
   if (loading) {
     return (

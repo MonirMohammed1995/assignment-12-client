@@ -101,12 +101,14 @@ const ManageAppliedApplication = () => {
                   </button>
 
                   <button
-                    onClick={() => handleCancel(app._id)}
-                    className="btn btn-sm btn-outline btn-error"
-                    disabled={app.status === 'rejected'}
-                  >
-                    <Trash2 className="w-4 h-4" /> Cancel
-                  </button>
+  onClick={() => handleCancel(app._id)}
+  className="btn btn-sm btn-outline btn-error"
+  disabled={app.status === 'rejected'}
+  title={app.status === 'rejected' ? 'Already rejected' : 'Reject application'}
+>
+  <Trash2 className="w-4 h-4" /> Cancel
+</button>
+
                 </td>
               </tr>
             ))}

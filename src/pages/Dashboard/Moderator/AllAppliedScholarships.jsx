@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { Trash2 } from 'lucide-react'; // Ensure this is installed or remove if unused
 
 const AllAppliedScholarships = () => {
   const [applications, setApplications] = useState([]);
   const [selectedApp, setSelectedApp] = useState(null);
   const [modalType, setModalType] = useState(null); // 'details' | 'feedback'
-  const [feedback, setFeedback] = useState('');
+  const [feedbackText, setFeedbackText] = useState('');
 
   const api = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    axios.get(`${api}/applications`)
-      .then(res => setApplications(res.data))
-      .catch(err => console.error('Error fetching applications:', err));
+    axios
+      .get(`${api}/applications`)
+      .then((res) => setApplications(res.data))
+      .catch((err) => console.error('Error fetching applications:', err));
   }, []);
 
   const openModal = (app, type) => {
@@ -24,45 +26,59 @@ const AllAppliedScholarships = () => {
   const closeModal = () => {
     setSelectedApp(null);
     setModalType(null);
-    setFeedback('');
+    setFeedbackText('');
   };
 
   const handleCancel = (id) => {
     Swal.fire({
       title: 'Are you sure?',
-      text: "Do you want to cancel this application?",
+      text: 'You want to reject this application?',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#d33',
+      confirmButtonColor: '#dc2626',
       cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, cancel it!',
+      confirmButtonText: 'Yes, reject it!',
     }).then((result) => {
       if (result.isConfirmed) {
-        axios.patch(`${api}/applications/cancel/${id}`, { status: 'rejected' })
+        fetch(`${api}/applications/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'rejected' }),
+        })
+          .then((res) => res.json())
           .then(() => {
-            Swal.fire('Cancelled!', 'Application has been rejected.', 'success');
-            setApplications(apps =>
-              apps.map(app => app._id === id ? { ...app, status: 'rejected' } : app)
+            Swal.fire('Rejected!', 'Application has been rejected.', 'success');
+            setApplications((prev) =>
+              prev.map((app) =>
+                app._id === id ? { ...app, status: 'rejected' } : app
+              )
             );
           })
-          .catch(err => {
-            Swal.fire('Error', 'Failed to cancel application.', 'error');
+          .catch((err) => {
+            Swal.fire('Error', 'Something went wrong.', 'error');
             console.error(err);
           });
       }
     });
   };
 
-  const handleFeedback = () => {
-    if (!feedback.trim()) return Swal.fire('Oops!', 'Feedback cannot be empty.', 'warning');
+  const handleFeedbackSubmit = () => {
+    if (!feedbackText.trim()) {
+      return Swal.fire('Oops!', 'Feedback cannot be empty.', 'warning');
+    }
 
-    axios.patch(`${api}/applications/feedback/${selectedApp._id}`, { feedback })
+    fetch(`${api}/applications/${selectedApp._id}/feedback`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ feedback: feedbackText }),
+    })
+      .then((res) => res.json())
       .then(() => {
-        Swal.fire('Success!', 'Feedback submitted successfully.', 'success');
+        Swal.fire('Success', 'Feedback submitted!', 'success');
         closeModal();
       })
-      .catch(err => {
-        Swal.fire('Error', 'Failed to send feedback.', 'error');
+      .catch((err) => {
+        Swal.fire('Error', 'Failed to submit feedback.', 'error');
         console.error(err);
       });
   };
@@ -84,19 +100,24 @@ const AllAppliedScholarships = () => {
             </tr>
           </thead>
           <tbody>
-            {applications.map(app => (
+            {applications.map((app) => (
               <tr key={app._id}>
                 <td>{app.scholarshipInfo?.university || 'N/A'}</td>
                 <td>{app.degree || 'N/A'}</td>
                 <td>{app.scholarshipInfo?.category || 'N/A'}</td>
                 <td>{app.userEmail || 'N/A'}</td>
                 <td>
-                  <span className={`badge text-white ${
-                    app.status === 'pending' ? 'bg-yellow-500' :
-                    app.status === 'processing' ? 'bg-blue-500' :
-                    app.status === 'completed' ? 'bg-green-500' :
-                    'bg-red-500'
-                  }`}>
+                  <span
+                    className={`badge text-white ${
+                      app.status === 'pending'
+                        ? 'bg-yellow-500'
+                        : app.status === 'processing'
+                        ? 'bg-blue-500'
+                        : app.status === 'completed'
+                        ? 'bg-green-500'
+                        : 'bg-red-500'
+                    }`}
+                  >
                     {app.status}
                   </span>
                 </td>
@@ -115,10 +136,15 @@ const AllAppliedScholarships = () => {
                   </button>
                   <button
                     onClick={() => handleCancel(app._id)}
-                    disabled={app.status === 'rejected'}
                     className="btn btn-sm btn-outline btn-error"
+                    disabled={app.status === 'rejected'}
+                    title={
+                      app.status === 'rejected'
+                        ? 'Already rejected'
+                        : 'Reject application'
+                    }
                   >
-                    Cancel
+                    <Trash2 className="w-4 h-4" /> Cancel
                   </button>
                 </td>
               </tr>
@@ -127,7 +153,9 @@ const AllAppliedScholarships = () => {
         </table>
 
         {applications.length === 0 && (
-          <div className="p-6 text-center text-gray-500">No applications found.</div>
+          <div className="p-6 text-center text-gray-500">
+            No applications found.
+          </div>
         )}
       </div>
 
@@ -137,14 +165,27 @@ const AllAppliedScholarships = () => {
           <div className="modal-box">
             <h3 className="font-bold text-lg mb-4">Application Details</h3>
             <div className="space-y-2 text-sm">
-              <p><strong>University:</strong> {selectedApp.universityName}</p>
-              <p><strong>Degree:</strong> {selectedApp.degree}</p>
-              <p><strong>Type:</strong> {selectedApp.scholarshipCategory}</p>
-              <p><strong>Email:</strong> {selectedApp.userEmail}</p>
-              <p><strong>Status:</strong> {selectedApp.status}</p>
+              <p>
+                <strong>University:</strong>{' '}
+                {selectedApp.scholarshipInfo?.university}
+              </p>
+              <p>
+                <strong>Degree:</strong> {selectedApp.degree}
+              </p>
+              <p>
+                <strong>Type:</strong> {selectedApp.scholarshipInfo?.category}
+              </p>
+              <p>
+                <strong>Email:</strong> {selectedApp.userEmail}
+              </p>
+              <p>
+                <strong>Status:</strong> {selectedApp.status}
+              </p>
             </div>
             <div className="modal-action mt-4">
-              <button className="btn" onClick={closeModal}>Close</button>
+              <button className="btn" onClick={closeModal}>
+                Close
+              </button>
             </div>
           </div>
         </dialog>
@@ -156,15 +197,22 @@ const AllAppliedScholarships = () => {
           <div className="modal-box">
             <h3 className="font-bold text-lg mb-4">Send Feedback</h3>
             <textarea
-              className="textarea textarea-bordered w-full"
-              rows="4"
-              placeholder="Write your feedback here..."
-              value={feedback}
-              onChange={e => setFeedback(e.target.value)}
-            />
+              className="textarea textarea-bordered w-full mt-1"
+              rows="3"
+              placeholder="Write feedback here..."
+              value={feedbackText}
+              onChange={(e) => setFeedbackText(e.target.value)}
+            ></textarea>
             <div className="modal-action mt-4">
-              <button className="btn btn-primary" onClick={handleFeedback}>Submit</button>
-              <button className="btn" onClick={closeModal}>Cancel</button>
+              <button
+                onClick={handleFeedbackSubmit}
+                className="btn btn-sm btn-primary"
+              >
+                Submit Feedback
+              </button>
+              <button className="btn" onClick={closeModal}>
+                Cancel
+              </button>
             </div>
           </div>
         </dialog>
