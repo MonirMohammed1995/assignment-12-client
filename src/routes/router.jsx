@@ -64,7 +64,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: 'all-scholarships', element: <AllScholarships /> },
-      { path: 'scholarship-details/:id', element: <ScholarshipDetails /> },
+      { path: 'scholarships/:id', element: <ScholarshipDetails /> },
 
       {
         element: <AuthLayout />,

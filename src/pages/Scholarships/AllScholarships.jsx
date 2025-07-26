@@ -95,7 +95,7 @@ const AllScholarships = () => {
                 </p>
                 <div className="card-actions justify-end mt-4">
                   <Link
-                    to={`/scholarship-details/${scholarship._id}`} // ✅ Correct route
+                    to={`/scholarships/${scholarship._id}`} // ✅ Correct route
                     className="btn btn-sm btn-accent"
                   >
                     Details

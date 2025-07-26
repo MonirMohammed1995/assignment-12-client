@@ -274,8 +274,9 @@ const ScholarshipDetails = () => {
                   <div>
                     <p className="font-semibold">{rev.reviewerName}</p>
                     <p className="text-sm text-gray-500">
-                      {format(new Date(rev.date), 'PPP')}
-                    </p>
+  {rev.date ? format(new Date(rev.date), 'PPP') : 'Date not available'}
+</p>
+
                   </div>
                 </div>
                 <p className="text-yellow-500 font-bold">Rating: {rev.rating}/5</p>
