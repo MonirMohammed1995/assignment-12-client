@@ -13,21 +13,22 @@ const ManageUsers = () => {
 
   if (role !== 'admin') return <Navigate to="/unauthorized" />;
 
+  // ✅ Fetch All Users
   useEffect(() => {
     const fetchUsers = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
         const res = await fetch(`${api}/users`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        if (!res.ok) throw new Error('Unauthorized or fetch error');
+        if (!res.ok) throw new Error('Failed to fetch users');
         const data = await res.json();
         setUsers(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error("Fetch error:", err.message);
+        console.error('Fetch error:', err.message);
         setUsers([]);
       } finally {
         setLoading(false);
@@ -37,7 +38,10 @@ const ManageUsers = () => {
     fetchUsers();
   }, [api, token]);
 
-  const handleRoleChange = async (id, newRole) => {
+  // ✅ Update User Role
+  const handleRoleChange = async (id, newRole, currentRole) => {
+    if (newRole === currentRole) return;
+
     try {
       const res = await fetch(`${api}/users/${id}/role`, {
         method: 'PATCH',
@@ -50,24 +54,23 @@ const ManageUsers = () => {
 
       const result = await res.json();
 
-      if (result.modifiedCount > 0) {
-        setUsers(prev =>
-          prev.map(user =>
-            user._id === id ? { ...user, role: newRole } : user
-          )
+      if (result.modifiedCount > 0 || result.success) {
+        setUsers((prev) =>
+          prev.map((u) => (u._id === id ? { ...u, role: newRole } : u))
         );
-        Swal.fire('Updated!', `Role changed to "${newRole}"`, 'success');
+        Swal.fire('Success', `User role updated to "${newRole}"`, 'success');
       } else {
-        Swal.fire('Error!', 'Failed to update role.', 'error');
+        Swal.fire('Error', 'Failed to update role.', 'error');
       }
     } catch (error) {
-      Swal.fire('Error!', 'Something went wrong while updating role.', 'error');
+      Swal.fire('Error', 'Something went wrong while updating role.', 'error');
     }
   };
 
+  // ✅ Delete User
   const handleDelete = async (id, email) => {
     if (email === user?.email) {
-      return Swal.fire('Warning', 'You cannot delete your own admin account.', 'warning');
+      return Swal.fire('Warning', 'You cannot delete your own account.', 'warning');
     }
 
     const confirm = await Swal.fire({
@@ -90,22 +93,23 @@ const ManageUsers = () => {
 
         const result = await res.json();
 
-        if (result.deletedCount > 0) {
-          setUsers(prev => prev.filter(user => user._id !== id));
+        if (result.deletedCount > 0 || result.success) {
+          setUsers((prev) => prev.filter((u) => u._id !== id));
           Swal.fire('Deleted!', 'User has been removed.', 'success');
         } else {
-          Swal.fire('Error!', 'Failed to delete user.', 'error');
+          Swal.fire('Error', 'Failed to delete user.', 'error');
         }
       } catch (error) {
-        Swal.fire('Error!', 'Something went wrong while deleting user.', 'error');
+        Swal.fire('Error', 'Something went wrong while deleting user.', 'error');
       }
     }
   };
 
+  // ✅ Filter Users by Role
   const filteredUsers = useMemo(() => {
     return filterRole === 'all'
       ? users
-      : users.filter(user => user.role === filterRole);
+      : users.filter((u) => u.role === filterRole);
   }, [users, filterRole]);
 
   return (
@@ -143,25 +147,25 @@ const ManageUsers = () => {
                 </td>
               </tr>
             ) : filteredUsers.length > 0 ? (
-              filteredUsers.map((user, index) => (
-                <tr key={user._id}>
+              filteredUsers.map((u, index) => (
+                <tr key={u._id}>
                   <td>{index + 1}</td>
-                  <td className="capitalize">{user.name || 'N/A'}</td>
-                  <td>{user.email}</td>
+                  <td className="capitalize">{u.name || 'N/A'}</td>
+                  <td>{u.email}</td>
                   <td>
                     <details className="dropdown">
                       <summary className="btn btn-xs btn-outline capitalize">
-                        {user.role}
+                        {u.role}
                       </summary>
                       <ul className="p-2 shadow menu dropdown-content bg-base-100 rounded-box w-32 z-[999]">
-                        {['user', 'moderator', 'admin'].map((roleOpt) => (
-                          <li key={roleOpt}>
+                        {['user', 'moderator', 'admin'].map((opt) => (
+                          <li key={opt}>
                             <button
                               className="capitalize"
-                              onClick={() => handleRoleChange(user._id, roleOpt)}
-                              disabled={user.role === roleOpt}
+                              onClick={() => handleRoleChange(u._id, opt, u.role)}
+                              disabled={u.role === opt}
                             >
-                              {roleOpt}
+                              {opt}
                             </button>
                           </li>
                         ))}
@@ -170,7 +174,7 @@ const ManageUsers = () => {
                   </td>
                   <td className="text-center">
                     <button
-                      onClick={() => handleDelete(user._id, user.email)}
+                      onClick={() => handleDelete(u._id, u.email)}
                       className="btn btn-sm btn-error flex items-center gap-1"
                     >
                       <Trash2 size={16} /> Delete
