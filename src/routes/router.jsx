@@ -53,6 +53,7 @@ import PaymentSuccess from '../pages/Payment/PaymentSuccess';
 
 // Role-based redirect
 import DashboardRedirect from '../pages/Dashboard/DashboardRedirect';
+import AnalyticsChart from '../pages/Dashboard/Admin/AnalyticsChart';
 
 const stripePromise = loadStripe(import.meta.env.VITE_PAYMENT_KEY);
 
@@ -127,6 +128,7 @@ export const router = createBrowserRouter([
             children: [
               { index: true, element: <AdminProfile /> },
               { path: 'add-scholarship', element: <AddScholarship /> },
+              { path: 'analytics-chart', element: <AnalyticsChart/>},
               { path: 'manage-scholarship', element: <ManageScholarship /> },
               { path: 'manage-applied-applications', element: <ManageAppliedApplication /> },
               { path: 'manage-users', element: <ManageUsers /> },
