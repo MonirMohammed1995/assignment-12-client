@@ -6,12 +6,21 @@ const ManageAppliedApplication = () => {
   const [applications, setApplications] = useState([]);
   const [selectedApp, setSelectedApp] = useState(null);
   const [feedbackText, setFeedbackText] = useState('');
+  const [sortOption, setSortOption] = useState('');
 
+  // Fetch applications with optional sorting
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/applications`)
+    let url = `${import.meta.env.VITE_API_URL}/applications`;
+
+    if (sortOption) {
+      const [sortBy, order] = sortOption.split('-');
+      url += `?sortBy=${sortBy}&order=${order}`;
+    }
+
+    fetch(url)
       .then(res => res.json())
       .then(data => setApplications(data));
-  }, []);
+  }, [sortOption]);
 
   const handleCancel = (id) => {
     Swal.fire({
@@ -56,7 +65,22 @@ const ManageAppliedApplication = () => {
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-semibold mb-4">Manage All Applied Applications</h2>
+      <h2 className="text-2xl font-semibold mb-4 text-center">Manage All Applied Applications</h2>
+
+      {/* 🔽 Sorting Dropdown */}
+      <div className="flex justify-center mb-6">
+        <select
+          className="select select-bordered w-72"
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value)}
+        >
+          <option value="">Sort by</option>
+          <option value="createdAt-asc">Applied Date (Oldest)</option>
+          <option value="createdAt-desc">Applied Date (Newest)</option>
+          <option value="scholarshipInfo.deadline-asc">Deadline (Earliest)</option>
+          <option value="scholarshipInfo.deadline-desc">Deadline (Latest)</option>
+        </select>
+      </div>
 
       <div className="overflow-x-auto rounded-lg shadow border border-gray-200 bg-white">
         <table className="table table-zebra">
@@ -101,14 +125,13 @@ const ManageAppliedApplication = () => {
                   </button>
 
                   <button
-  onClick={() => handleCancel(app._id)}
-  className="btn btn-sm btn-outline btn-error"
-  disabled={app.status === 'rejected'}
-  title={app.status === 'rejected' ? 'Already rejected' : 'Reject application'}
->
-  <Trash2 className="w-4 h-4" /> Cancel
-</button>
-
+                    onClick={() => handleCancel(app._id)}
+                    className="btn btn-sm btn-outline btn-error"
+                    disabled={app.status === 'rejected'}
+                    title={app.status === 'rejected' ? 'Already rejected' : 'Reject application'}
+                  >
+                    <Trash2 className="w-4 h-4" /> Cancel
+                  </button>
                 </td>
               </tr>
             ))}
