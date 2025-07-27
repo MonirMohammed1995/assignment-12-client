@@ -35,7 +35,7 @@ export const AdminSidebar = () => (
     <DashboardLink to="/dashboard/admin/analytics-chart" label="Analytics Chart" />
     <DashboardLink to="/dashboard/admin/manage-users" label="Manage Users" />
     <DashboardLink to="/dashboard/admin/manage-scholarship" label="Manage Scholarships" />
-    <DashboardLink to="/dashboard/admin/manage-applied-applications" label="Manage Applications" />
+    <DashboardLink to="/dashboard/admin/manage-applied-app" label="Manage Applications" />
     <DashboardLink to="/dashboard/admin/manage-reviews" label="Manage Reviews" />
   </>
 );
@@ -47,6 +47,6 @@ export const ModeratorSidebar = () => (
     <DashboardLink to="/dashboard/moderator/add-scholarship" label="Add Scholarship" />
     <DashboardLink to="/dashboard/moderator/manage-scholarship" label="Manage Scholarships" />
     <DashboardLink to="/dashboard/moderator/all-reviews" label="All Reviews" />
-    <DashboardLink to="/dashboard/moderator/all-applied-scholarship" label="All Applications" />
+    <DashboardLink to="/dashboard/moderator/all-applied-scholarships" label="All Applications" />
   </>
 );

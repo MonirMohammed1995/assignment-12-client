@@ -43,7 +43,7 @@ const AllReviews = () => {
                 {reviews.map(review => (
                     <div key={review._id} className="p-4 shadow-md rounded-xl">
                         <h3 className="text-lg font-semibold">{review.universityName}</h3>
-                        <p className="text-sm text-gray-600">Subject: {review.subjectCategory}</p>
+                        {/* <p className="text-sm text-gray-600">Subject: {review.subjectCategory}</p> */}
                         <div className="flex items-center gap-3 mt-2">
                             <img
                                 src={review.reviewerImage}

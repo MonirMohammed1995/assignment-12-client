@@ -7,17 +7,21 @@ const PrivateRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
   const location = useLocation();
 
-  if (loading) {
+  if (loading || typeof user === 'undefined') {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <span className="text-lg font-semibold text-indigo-600 animate-pulse">
-          Loading...
+        <span className="text-lg font-medium text-gray-600 animate-pulse">
+          Authenticating...
         </span>
       </div>
     );
   }
 
-  return user ? children : <Navigate to="/login" state={{ from: location }} replace />;
+  if (user) {
+    return children;
+  }
+
+  return <Navigate to="/login" state={{ from: location }} replace />;
 };
 
 export default PrivateRoute;
