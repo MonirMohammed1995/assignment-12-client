@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Helmet } from "react-helmet";
 import { Link } from "react-router-dom";
 
 const AllScholarships = () => {
@@ -43,6 +44,7 @@ const AllScholarships = () => {
 
   return (
     <div className="px-4 md:px-10 py-10">
+      <Helmet><title>All Scholarships</title></Helmet>
       <h2 className="text-3xl font-bold mb-6 text-center">🎓 All Scholarships</h2>
 
       {/* 🔍 Search Input */}

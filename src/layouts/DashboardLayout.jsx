@@ -4,6 +4,7 @@ import { AuthContext } from '../context/AuthProvider';
 import { LogOut } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { AdminSidebar, ModeratorSidebar, UserSidebar } from '../components/shared/DashboardLink';
+import { Helmet } from 'react-helmet';
 
 const DashboardLayout = () => {
   const { user, role, loading, logout } = useContext(AuthContext);
@@ -46,6 +47,7 @@ const DashboardLayout = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet><title>Dashboard</title></Helmet>
       <div className="flex flex-1 bg-gray-50 mt-20 min-h-[calc(100vh-80px)] text-gray-700">
         {/* Sidebar */}
         <aside className="w-64 bg-white shadow-md p-6 hidden md:block sticky top-20 self-start h-[calc(100vh-80px)] overflow-y-auto rounded-tr-2xl">

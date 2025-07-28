@@ -12,6 +12,7 @@ import {
   signInWithPopup,
 } from 'firebase/auth';
 import { app } from '../../firebase/firebase.config';
+import { Helmet } from 'react-helmet';
 
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
@@ -104,6 +105,7 @@ const Register = () => {
 
   return (
     <div className="p-4 min-h-[calc(100vh-80px)] bg-gradient-to-r from-indigo-100 to-blue-200 flex items-center justify-center">
+      <Helmet><title>Register</title></Helmet>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-10">
         <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-8">
           Create Account

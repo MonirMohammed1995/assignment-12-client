@@ -5,6 +5,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { uploadImageToImgbb } from "../../utils/uploadImageToImgbb"; // your image upload utility
 import { AuthContext } from "../../context/AuthProvider";
+import { Helmet } from "react-helmet";
 
 const Checkout = () => {
   const stripe = useStripe();
@@ -140,6 +141,7 @@ const Checkout = () => {
 
   return (
     <div className="max-w-3xl mx-auto my-10 p-6 bg-white shadow rounded-lg">
+      <Helmet><title>Check Out</title></Helmet>
       <h2 className="text-2xl font-bold mb-4">
         Apply for: {scholarship.universityName}
       </h2>

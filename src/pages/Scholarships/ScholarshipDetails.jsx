@@ -5,6 +5,7 @@ import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
 import Swal from 'sweetalert2';
 import { format } from 'date-fns';
+import { Helmet } from 'react-helmet';
 
 const ReviewModal = ({ onClose, onSubmit }) => {
   const [rating, setRating] = useState(0);
@@ -195,6 +196,7 @@ const ScholarshipDetails = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
+      <Helmet><title>Scholarship Details</title></Helmet>
       {/* === Scholarship Info === */}
       <div className="grid md:grid-cols-2 gap-8 items-center">
         <img

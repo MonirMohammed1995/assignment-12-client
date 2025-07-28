@@ -10,6 +10,7 @@ import {
 } from 'firebase/auth';
 import axios from 'axios';
 import { app } from '../../firebase/firebase.config';
+import { Helmet } from 'react-helmet';
 
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
@@ -137,7 +138,9 @@ const Login = () => {
   }, []);
 
   return (
-    <div className="p-4 flex items-center justify-center min-h-[calc(100vh-80px)] bg-gradient-to-r from-blue-100 to-indigo-200">
+    <div>
+      <Helmet><title>Login</title></Helmet>
+      <div className="p-4 flex items-center justify-center min-h-[calc(100vh-80px)] bg-gradient-to-r from-blue-100 to-indigo-200">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-10">
         <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-8">
           Welcome Back
@@ -216,6 +219,7 @@ const Login = () => {
           {loading ? 'Please wait...' : 'Sign in with Google'}
         </button>
       </div>
+    </div>
     </div>
   );
 };

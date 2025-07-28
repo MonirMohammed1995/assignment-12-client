@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { format } from 'date-fns';
+import { Helmet } from 'react-helmet';
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -53,6 +54,7 @@ const PaymentSuccess = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-6 mt-10 bg-white shadow-md rounded-lg border border-green-200">
+      <Helmet><title>Payment Success</title></Helmet>
       <h2 className="text-2xl font-bold text-green-600 mb-6 text-center">🎉 Payment Successful!</h2>
       <div className="space-y-3 text-gray-700">
         <p><strong>🏛️ University:</strong> {application.scholarshipInfo?.university || 'N/A'}</p>
