@@ -57,7 +57,7 @@ const PaymentSuccess = () => {
       <div className="space-y-3 text-gray-700">
         <p><strong>🏛️ University:</strong> {application.scholarshipInfo?.university || 'N/A'}</p>
         <p><strong>🎓 Scholarship Category:</strong> {application.scholarshipInfo?.category || 'N/A'}</p>
-        <p><strong>📚 Subject:</strong> {application.subject || 'N/A'}</p>
+        <p><strong>📚 Subject:</strong> {application.scholarshipInfo?.subject || 'N/A'}</p>
         <p><strong>👤 Applicant:</strong> {application.userName} ({application.userEmail})</p>
         <p><strong>📌 Status:</strong> {application.status || 'pending'}</p>
         <p><strong>💳 Payment Intent:</strong> {application.paymentIntentId}</p>
