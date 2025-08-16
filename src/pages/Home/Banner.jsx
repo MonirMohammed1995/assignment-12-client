@@ -1,50 +1,25 @@
 import React from 'react';
 import { Carousel } from 'react-responsive-carousel';
+import { motion } from 'framer-motion';
 import img1 from '../../assets/banner/banner1.jpg';
 import img2 from '../../assets/banner/banner2.jpg';
 import img3 from '../../assets/banner/banner3.jpg';
 import img4 from '../../assets/banner/banner4.jpg';
 import img5 from '../../assets/banner/banner5.jpg';
-import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import 'react-responsive-carousel/lib/styles/carousel.min.css';
 
 const banners = [
-  {
-    id: 1,
-    title: "Global Scholarships for Everyone",
-    desc: "Discover worldwide scholarship opportunities tailored for you.",
-    img: img1,
-  },
-  {
-    id: 2,
-    title: "Learn Without Limits",
-    desc: "Apply for top scholarships and make your dream university a reality.",
-    img: img2,
-  },
-  {
-    id: 3,
-    title: "Career-Ready Education",
-    desc: "Gain access to institutions that shape future leaders.",
-    img: img3,
-  },
-  {
-    id: 4,
-    title: "Study Abroad Made Easy",
-    desc: "Find, apply, and track scholarships from across the globe.",
-    img: img4,
-  },
-  {
-    id: 5,
-    title: "Empower Your Future",
-    desc: "Take the first step towards a brighter tomorrow with ScholarSys.",
-    img: img5,
-  },
+  { id: 1, title: "Global Scholarships for Everyone", desc: "Discover worldwide scholarship opportunities tailored for you.", img: img1 },
+  { id: 2, title: "Learn Without Limits", desc: "Apply for top scholarships and make your dream university a reality.", img: img2 },
+  { id: 3, title: "Career-Ready Education", desc: "Gain access to institutions that shape future leaders.", img: img3 },
+  { id: 4, title: "Study Abroad Made Easy", desc: "Find, apply, and track scholarships from across the globe.", img: img4 },
+  { id: 5, title: "Empower Your Future", desc: "Take the first step towards a brighter tomorrow with ScholarSys.", img: img5 },
 ];
 
 const Banner = () => {
   return (
-    <div className="pt-16">
+    <div className="pt-16 relative">
       <Carousel
         autoPlay
         infiniteLoop
@@ -56,50 +31,52 @@ const Banner = () => {
         emulateTouch
       >
         {banners.map((banner) => (
-          <div key={banner.id} className="relative w-full rounded-2xl overflow-hidden">
+          <div key={banner.id} className="relative w-full">
             {/* Background Image */}
             <img
               src={banner.img}
               alt={banner.title}
-              className="w-full h-[350px] md:h-[550px] lg:h-[650px] object-cover"
+              className="w-full h-[450px] md:h-[600px] lg:h-[700px] object-cover"
             />
 
-            {/* Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-black/40 flex flex-col justify-center items-center text-center px-6 md:px-12">
-              
-              {/* Animated Heading */}
-              <motion.h2
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-                className="text-white text-2xl md:text-4xl lg:text-5xl font-extrabold drop-shadow-xl"
-              >
-                {banner.title}
-              </motion.h2>
+            {/* Overlay & Caption */}
+            <div className="absolute inset-0 flex justify-center items-center">
+              <div className="bg-black/40 backdrop-blur-sm rounded-3xl p-6 md:p-12 max-w-3xl text-center">
+                
+                {/* Animated Heading */}
+                <motion.h2
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8 }}
+                  className="text-white text-2xl md:text-4xl lg:text-5xl font-extrabold drop-shadow-lg"
+                >
+                  {banner.title}
+                </motion.h2>
 
-              {/* Animated Description */}
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="text-white mt-4 md:mt-6 text-sm md:text-lg lg:text-xl max-w-2xl drop-shadow-md"
-              >
-                {banner.desc}
-              </motion.p>
+                {/* Animated Description */}
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  className="text-gray-200 mt-4 md:mt-6 text-sm md:text-lg lg:text-xl max-w-xl mx-auto drop-shadow-md"
+                >
+                  {banner.desc}
+                </motion.p>
 
-              {/* CTA Button */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-              >
-                <Link to="/all-scholarships">
-                  <button className="mt-6 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
-                    Explore Scholarships
-                  </button>
-                </Link>
-              </motion.div>
+                {/* CTA Button */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                >
+                  <Link to="/all-scholarships">
+                    <button className="mt-6 px-10 py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 text-white font-semibold rounded-xl shadow-xl hover:shadow-2xl transition transform hover:-translate-y-1">
+                      Explore Scholarships
+                    </button>
+                  </Link>
+                </motion.div>
 
+              </div>
             </div>
           </div>
         ))}

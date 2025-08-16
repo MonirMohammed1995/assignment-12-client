@@ -7,10 +7,10 @@ import { Users, School, Globe, Star } from "lucide-react";
 const ReviewStats = () => {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.3 });
   const [stats, setStats] = useState({
-    students: 0,
-    scholarships: 0,
-    countries: 0,
-    rating: 0,
+    students: 1200,
+    scholarships: 120,
+    countries: 110,
+    rating: 4.8,
   });
 
   useEffect(() => {

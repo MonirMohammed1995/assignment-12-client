@@ -1,6 +1,50 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
 import { Link } from "react-router-dom";
+import { X, Search } from "lucide-react";
+
+// Reusable Scholarship Card
+const ScholarshipCard = ({ scholarship }) => (
+  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-transform duration-300 flex flex-col overflow-hidden">
+    <figure className="h-48 w-full overflow-hidden rounded-t-2xl">
+      <img
+        src={scholarship.universityImage}
+        alt={scholarship.scholarshipName}
+        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+      />
+    </figure>
+    <div className="p-6 flex flex-col flex-1">
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">{scholarship.scholarshipName}</h3>
+      <p className="text-sm text-gray-600"><span className="font-semibold">University:</span> {scholarship.universityName}</p>
+      <p className="text-sm text-gray-600"><span className="font-semibold">Degree:</span> {scholarship.degree}</p>
+      <p className="text-sm text-gray-600"><span className="font-semibold">Amount:</span> {scholarship.tuitionFees || "Free"}</p>
+      <p className="text-sm text-gray-600"><span className="font-semibold">Deadline:</span> {scholarship.deadline || "N/A"}</p>
+      <div className="mt-4 flex justify-end">
+        <Link
+          to={`/scholarships/${scholarship._id}`}
+          className="btn btn-sm bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-all"
+        >
+          Details
+        </Link>
+      </div>
+    </div>
+  </div>
+);
+
+// Pagination Button Component
+const PaginationButton = ({ onClick, active, children, disabled }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={`px-4 py-2 rounded-lg font-medium transition ${
+      active
+        ? "bg-blue-500 text-white shadow-md hover:bg-blue-600"
+        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+    } disabled:opacity-50`}
+  >
+    {children}
+  </button>
+);
 
 const AllScholarships = () => {
   const [scholarships, setScholarships] = useState([]);
@@ -27,12 +71,12 @@ const AllScholarships = () => {
       s.degree?.toLowerCase().includes(lowerTerm)
     );
     setFiltered(matched);
-    setCurrentPage(1); // reset to page 1 on search
+    setCurrentPage(1);
   }, [searchTerm, scholarships]);
 
   const handleClear = () => setSearchTerm("");
 
-  // 🔢 Pagination calculations
+  // Pagination
   const indexOfLast = currentPage * scholarshipsPerPage;
   const indexOfFirst = indexOfLast - scholarshipsPerPage;
   const currentScholarships = filtered.slice(indexOfFirst, indexOfLast);
@@ -43,109 +87,69 @@ const AllScholarships = () => {
   const prevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
 
   return (
-    <div className="px-4 md:px-10 py-10">
+    <div className="px-4 md:px-10 py-12">
       <Helmet><title>All Scholarships</title></Helmet>
-      <h2 className="text-3xl font-bold mb-6 text-center">🎓 All Scholarships</h2>
+      <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center text-gray-900">
+        Explore Scholarships
+      </h2>
 
-      {/* 🔍 Search Input */}
-      <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
+      {/* Search Input */}
+      <div className="flex justify-center mb-10">
         <div className="relative w-full max-w-md">
+          <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
             placeholder="Search by Name, University, or Degree"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="input input-bordered w-full pr-10"
+            className="input input-bordered w-full pl-10 pr-10 focus:border-blue-500 focus:ring focus:ring-blue-200 rounded-lg"
           />
           {searchTerm && (
             <button
               onClick={handleClear}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               aria-label="Clear search"
             >
-              ✕
+              <X size={18} />
             </button>
           )}
         </div>
       </div>
 
-      {/* 🗃️ Scholarships */}
+      {/* Scholarships Grid */}
       {currentScholarships.length === 0 ? (
-        <div className="text-center mt-10">
+        <div className="text-center mt-16">
           <img
             src="https://i.ibb.co/LkNsXwD/no-data.png"
             alt="No Scholarships"
-            className="mx-auto w-48"
+            className="mx-auto w-52 md:w-64"
           />
-          <p className="mt-4 text-xl font-semibold">No Scholarships Found</p>
+          <p className="mt-6 text-xl font-semibold text-gray-600">
+            No Scholarships Found
+          </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {currentScholarships.map((scholarship) => (
-            <div
-              key={scholarship._id}
-              className="card bg-base-100 shadow-xl border border-base-300 hover:shadow-2xl transition-all"
-            >
-              <figure>
-                <img
-                  src={scholarship.universityImage}
-                  alt={scholarship.scholarshipName}
-                  className="h-48 w-full object-cover"
-                />
-              </figure>
-              <div className="card-body">
-                <h2 className="card-title">{scholarship.scholarshipName}</h2>
-                <p>
-                  <span className="font-semibold">University:</span>{" "}
-                  {scholarship.universityName}
-                </p>
-                <p>
-                  <span className="font-semibold">Degree:</span>{" "}
-                  {scholarship.degree}
-                </p>
-                <p>
-                  <span className="font-semibold">Amount:</span>{" "}
-                  {scholarship.tuitionFees || "Free"}
-                </p>
-                <p>
-                  <span className="font-semibold">Deadline:</span>{" "}
-                  {scholarship.deadline || "N/A"}
-                </p>
-                <div className="card-actions justify-end mt-4">
-                  <Link to={`/scholarships/${scholarship._id}`} className="btn btn-sm btn-accent">
-                    Details
-                  </Link>
-                </div>
-              </div>
-            </div>
+            <ScholarshipCard key={scholarship._id} scholarship={scholarship} />
           ))}
         </div>
       )}
 
-      {/* 🔄 Pagination Controls */}
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex flex-wrap justify-center items-center gap-2 mt-10">
-          <button onClick={prevPage} disabled={currentPage === 1} className="btn btn-sm btn-outline">
-            ◀ Prev
-          </button>
-
+        <div className="flex flex-wrap justify-center items-center gap-3 mt-12">
+          <PaginationButton onClick={prevPage} disabled={currentPage === 1}>◀ Prev</PaginationButton>
           {[...Array(totalPages).keys()].map((num) => (
-            <button
+            <PaginationButton
               key={num}
               onClick={() => paginate(num + 1)}
-              className={`btn btn-sm ${currentPage === num + 1 ? "btn-primary" : "btn-outline"}`}
+              active={currentPage === num + 1}
             >
               {num + 1}
-            </button>
+            </PaginationButton>
           ))}
-
-          <button
-            onClick={nextPage}
-            disabled={currentPage === totalPages}
-            className="btn btn-sm btn-outline"
-          >
-            Next ▶
-          </button>
+          <PaginationButton onClick={nextPage} disabled={currentPage === totalPages}>Next ▶</PaginationButton>
         </div>
       )}
     </div>
