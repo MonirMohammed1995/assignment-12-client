@@ -54,6 +54,8 @@ import UserRoute from './UserRoute';
 
 // === Redirect ===
 import DashboardRedirect from '../pages/Dashboard/DashboardRedirect';
+import AboutUs from '../pages/AboutUs';
+import Contact from '../pages/Contact';
 
 // === Stripe Setup ===
 const stripePromise = loadStripe(import.meta.env.VITE_PAYMENT_KEY);
@@ -67,6 +69,8 @@ export const router = createBrowserRouter([
     children: [
       // Public Pages
       { index: true, element: <Home /> },
+      { path: "/about-us", element:<AboutUs/>},
+      { path: "/contact", element:<Contact/>},
       { path: 'all-scholarships', element: <AllScholarships /> },
       { path: 'scholarships/:id', element: <ScholarshipDetails /> },
 

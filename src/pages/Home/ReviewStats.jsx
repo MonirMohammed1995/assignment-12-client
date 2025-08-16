@@ -1,75 +1,122 @@
-import React, { useState } from 'react';
-import CountUp from 'react-countup';
-import { useInView } from 'react-intersection-observer';
-import { Star, Users, School, Globe } from 'lucide-react';
-
-const stats = [
-  {
-    icon: Users,
-    count: 5000,
-    label: 'Students Supported',
-  },
-  {
-    icon: School,
-    count: 1200,
-    label: 'Scholarships Published',
-  },
-  {
-    icon: Globe,
-    count: 50,
-    label: 'Countries Reached',
-  },
-  {
-    icon: Star,
-    count: 4.8,
-    label: 'Average Rating',
-    isRating: true,
-  },
-];
+import React, { useEffect, useState } from "react";
+import CountUp from "react-countup";
+import { useInView } from "react-intersection-observer";
+import { motion } from "framer-motion";
+import { Users, School, Globe, Star } from "lucide-react";
 
 const ReviewStats = () => {
-  const { ref, inView } = useInView({
-    triggerOnce: false, // 👈 ensures re-trigger on scroll
-    threshold: 0.3,
+  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.3 });
+  const [stats, setStats] = useState({
+    students: 0,
+    scholarships: 0,
+    countries: 0,
+    rating: 0,
   });
 
-  const [key, setKey] = useState(0); // Helps re-render CountUp when inView toggles
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/reviews`);
+        const data = await res.json();
+        setStats(data);
+      } catch (err) {
+        console.error("Error fetching stats:", err);
+      }
+    };
+    fetchStats();
+  }, []);
 
-  React.useEffect(() => {
-    if (inView) {
-      setKey(prev => prev + 1); // Trigger rerender
-    }
-  }, [inView]);
+  const cards = [
+    {
+      icon: Users,
+      value: stats.students,
+      label: "Students Supported",
+      color: "text-indigo-600",
+      bg: "bg-indigo-100",
+    },
+    {
+      icon: School,
+      value: stats.scholarships,
+      label: "Scholarships Published",
+      color: "text-emerald-600",
+      bg: "bg-emerald-100",
+    },
+    {
+      icon: Globe,
+      value: stats.countries,
+      label: "Countries Reached",
+      color: "text-sky-600",
+      bg: "bg-sky-100",
+    },
+    {
+      icon: Star,
+      value: stats.rating,
+      label: "Average Rating",
+      color: "text-amber-500",
+      bg: "bg-amber-100",
+      isRating: true,
+    },
+  ];
 
   return (
-    <section className="bg-base-100 py-20 border-t" ref={ref}>
-      <div className="max-w-7xl mx-auto px-4 md:px-6 text-center">
-        <h2 className="text-3xl md:text-4xl font-bold text-blue-500 mb-4">Our Trusted Impact</h2>
-        <p className="text-gray-600 max-w-2xl mx-auto mb-12">
-          ScholarSys continues to empower thousands of learners worldwide — here’s how we’ve made a difference.
-        </p>
+    <section
+      ref={ref}
+      className="py-20 bg-gradient-to-b from-gray-50 via-white to-gray-50 border-t"
+    >
+      <div className="max-w-7xl mx-auto px-6 text-center">
+        {/* Heading */}
+        <motion.h2
+          initial={{ opacity: 0, y: 30 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight"
+        >
+          Our Trusted Impact
+        </motion.h2>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7, delay: 0.2 }}
+          className="text-gray-600 max-w-2xl mx-auto mt-4 text-lg"
+        >
+          ScholarSys empowers thousands of learners worldwide. These numbers
+          reflect the scale of our mission.
+        </motion.p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-          {stats.map(({ icon: Icon, count, label, isRating }, index) => (
-            <div
-              key={`${index}-${key}`} // 👈 re-renders on key change to replay animation
-              className="flex flex-col items-center justify-center px-4 py-6 bg-white shadow-md rounded-xl transition hover:shadow-lg"
+        {/* Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mt-16">
+          {cards.map((card, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 40 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: index * 0.2 }}
+              className="p-8 bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 flex flex-col items-center border border-gray-100"
             >
-              <div className="mb-3">
-                <Icon size={36} className={`${isRating ? 'text-yellow-400' : 'text-blue-500'}`} />
+              {/* Icon */}
+              <div className={`p-4 rounded-full ${card.bg} mb-5 shadow-inner`}>
+                <card.icon size={40} className={card.color} />
               </div>
-              <h3 className="text-3xl font-extrabold text-gray-900">
+
+              {/* Number */}
+              <h3 className="text-4xl font-bold text-gray-900 flex items-center">
                 <CountUp
                   start={0}
-                  end={count}
+                  end={card.value}
                   duration={2}
-                  decimals={isRating ? 1 : 0}
-                  suffix={isRating ? '' : '+'}
+                  decimals={card.isRating ? 1 : 0}
+                  suffix={card.isRating ? "" : "+"}
                 />
-                {isRating && <span className="text-yellow-400 text-2xl ml-1">★</span>}
+                {card.isRating && (
+                  <span className="ml-1 text-amber-500 text-2xl">★</span>
+                )}
               </h3>
-              <p className="mt-1 text-sm font-medium text-gray-500">{label}</p>
-            </div>
+
+              {/* Label */}
+              <p className="mt-3 text-base font-medium text-gray-600">
+                {card.label}
+              </p>
+            </motion.div>
           ))}
         </div>
       </div>

@@ -5,6 +5,8 @@ import WhyChooseUs from './WhyChooseUs';
 import ReviewStats from './ReviewStats';
 import TopScholarships from '../Scholarships/TopScholarships';
 import { Helmet } from 'react-helmet';
+import Reviews from './Reviews';
+import ScholarshipStats from './ScholarshipStats';
 
 const Home = () => {
     return (
@@ -13,8 +15,10 @@ const Home = () => {
             <div>
             <Banner/>
             <TopScholarships/>
+            <Reviews/>
             <HowItWorks/>
             <WhyChooseUs/>
+            <ScholarshipStats/>
             <ReviewStats/>
         </div>
         </div>
