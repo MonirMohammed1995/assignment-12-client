@@ -35,9 +35,7 @@ const ManageUsers = () => {
         if (data.modifiedCount > 0) {
           Swal.fire('Success', 'User role updated!', 'success');
           setUsers((prev) =>
-            prev.map((u) =>
-              u._id === userId ? { ...u, role: newRole } : u
-            )
+            prev.map((u) => (u._id === userId ? { ...u, role: newRole } : u))
           );
         }
       });
@@ -78,12 +76,14 @@ const ManageUsers = () => {
   }, [users, filterRole]);
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">Manage Users</h2>
+    <div className="p-6 bg-gray-50 min-h-[calc(100vh-80px)]">
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">Manage Users</h2>
 
-      <div className="mb-4">
+      {/* Role Filter */}
+      <div className="mb-6 flex flex-wrap items-center gap-4">
+        <label className="font-medium text-gray-700">Filter by role:</label>
         <select
-          className="select select-bordered max-w-xs"
+          className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           value={filterRole}
           onChange={(e) => setFilterRole(e.target.value)}
         >
@@ -94,56 +94,60 @@ const ManageUsers = () => {
         </select>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="table table-zebra">
-          <thead>
+      {/* Users Table */}
+      <div className="overflow-x-auto bg-white rounded-lg shadow-md border border-gray-200">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-100">
             <tr>
-              <th>#</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th className="text-center">Delete</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">#</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Email</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Role</th>
+              <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            {filteredUsers.map((u, index) => (
-              <tr key={u._id}>
-                <td>{index + 1}</td>
-                <td>{u.name}</td>
-                <td>{u.email}</td>
-                <td>
-                  <details className="dropdown">
-                    <summary className="btn btn-xs btn-outline capitalize">
-                      {u.role}
-                    </summary>
-                    <ul className="p-2 shadow menu dropdown-content bg-base-100 rounded-box w-32 z-[999]">
-                      {['user', 'moderator', 'admin'].map((opt) => (
-                        <li key={opt}>
-                          <button
-                            className="capitalize"
-                            onClick={() => handleRoleChange(u._id, opt, u.role)}
-                            disabled={u.role === opt}
-                          >
-                            {opt}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </details>
-                </td>
-                <td className="text-center">
-                  <button
-                    className="btn btn-sm btn-error text-white"
-                    onClick={() => handleDelete(u._id, u.email)}
-                  >
-                    <FaTrashAlt />
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {filteredUsers.length === 0 && (
+          <tbody className="divide-y divide-gray-200">
+            {filteredUsers.length > 0 ? (
+              filteredUsers.map((u, index) => (
+                <tr key={u._id} className="hover:bg-gray-50 transition">
+                  <td className="px-6 py-4 text-sm text-gray-600">{index + 1}</td>
+                  <td className="px-6 py-4 text-sm text-gray-800">{u.name}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{u.email}</td>
+                  <td className="px-6 py-4 text-sm">
+                    <details className="dropdown">
+                      <summary className="cursor-pointer px-3 py-1 bg-indigo-100 text-indigo-700 rounded-md capitalize">
+                        {u.role}
+                      </summary>
+                      <ul className="p-2 shadow-lg menu dropdown-content bg-white rounded-md w-32 z-[999]">
+                        {['user', 'moderator', 'admin'].map((opt) => (
+                          <li key={opt}>
+                            <button
+                              className={`capitalize w-full text-left px-2 py-1 hover:bg-indigo-50 rounded-md ${
+                                u.role === opt ? 'text-gray-400 cursor-not-allowed' : ''
+                              }`}
+                              onClick={() => handleRoleChange(u._id, opt, u.role)}
+                              disabled={u.role === opt}
+                            >
+                              {opt}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <button
+                      className="inline-flex items-center justify-center bg-red-600 hover:bg-red-700 text-white p-2 rounded-md transition"
+                      onClick={() => handleDelete(u._id, u.email)}
+                    >
+                      <FaTrashAlt />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
               <tr>
-                <td colSpan="5" className="text-center text-gray-500 py-4">
+                <td colSpan="5" className="text-center py-6 text-gray-500">
                   No users found for this role.
                 </td>
               </tr>
