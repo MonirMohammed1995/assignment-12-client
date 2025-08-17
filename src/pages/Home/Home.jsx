@@ -2,11 +2,13 @@ import React from 'react';
 import Banner from './Banner';
 import HowItWorks from './HowItWorks';
 import WhyChooseUs from './WhyChooseUs';
-import ReviewStats from './ReviewStats';
 import TopScholarships from '../Scholarships/TopScholarships';
 import { Helmet } from 'react-helmet';
 import Reviews from './Reviews';
 import ScholarshipStats from './ScholarshipStats';
+import Newsletter from './Newsletter';
+import FeaturedProducts from './FeaturedProducts';
+import SalesPromotion from './SalesPromotion';
 
 const Home = () => {
     return (
@@ -15,11 +17,13 @@ const Home = () => {
             <div>
             <Banner/>
             <TopScholarships/>
+            <FeaturedProducts/>
             <Reviews/>
             <HowItWorks/>
+            <Newsletter/>
             <WhyChooseUs/>
+            <SalesPromotion/>
             <ScholarshipStats/>
-            <ReviewStats/>
         </div>
         </div>
     );

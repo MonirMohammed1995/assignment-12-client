@@ -1,48 +1,45 @@
-import React, { useEffect, useState } from 'react';
-import { Eye, Trash2, MessageCircleMore } from 'lucide-react';
-import Swal from 'sweetalert2';
+import React, { useEffect, useState } from "react";
+import { Eye, Trash2, MessageCircleMore } from "lucide-react";
+import Swal from "sweetalert2";
 
 const ManageAppliedApplication = () => {
   const [applications, setApplications] = useState([]);
   const [selectedApp, setSelectedApp] = useState(null);
-  const [feedbackText, setFeedbackText] = useState('');
-  const [sortOption, setSortOption] = useState('');
+  const [feedbackText, setFeedbackText] = useState("");
+  const [sortOption, setSortOption] = useState("");
 
-  // Fetch applications with optional sorting
   useEffect(() => {
     let url = `${import.meta.env.VITE_API_URL}/applications`;
-
     if (sortOption) {
-      const [sortBy, order] = sortOption.split('-');
+      const [sortBy, order] = sortOption.split("-");
       url += `?sortBy=${sortBy}&order=${order}`;
     }
-
     fetch(url)
-      .then(res => res.json())
-      .then(data => setApplications(data));
+      .then((res) => res.json())
+      .then((data) => setApplications(data));
   }, [sortOption]);
 
   const handleCancel = (id) => {
     Swal.fire({
-      title: 'Are you sure?',
-      text: 'You want to reject this application?',
-      icon: 'warning',
+      title: "Are you sure?",
+      text: "You want to reject this application?",
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#dc2626',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, reject it!',
-    }).then(result => {
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, reject it!",
+    }).then((result) => {
       if (result.isConfirmed) {
         fetch(`${import.meta.env.VITE_API_URL}/applications/${id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'rejected' }),
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "rejected" }),
         })
-          .then(res => res.json())
+          .then((res) => res.json())
           .then(() => {
-            Swal.fire('Rejected!', 'Application has been rejected.', 'success');
-            setApplications(prev =>
-              prev.map(app => app._id === id ? { ...app, status: 'rejected' } : app)
+            Swal.fire("Rejected!", "Application has been rejected.", "success");
+            setApplications((prev) =>
+              prev.map((app) => (app._id === id ? { ...app, status: "rejected" } : app))
             );
           });
       }
@@ -51,26 +48,28 @@ const ManageAppliedApplication = () => {
 
   const handleFeedbackSubmit = () => {
     fetch(`${import.meta.env.VITE_API_URL}/applications/${selectedApp._id}/feedback`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ feedback: feedbackText }),
     })
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(() => {
-        Swal.fire('Success', 'Feedback submitted!', 'success');
+        Swal.fire("Success", "Feedback submitted!", "success");
         setSelectedApp(null);
-        setFeedbackText('');
+        setFeedbackText("");
       });
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-semibold mb-4 text-center">Manage All Applied Applications</h2>
+    <div className="p-6 max-w-7xl mx-auto">
+      <h2 className="text-3xl font-bold text-indigo-700 text-center mb-6">
+        Manage Applied Applications
+      </h2>
 
-      {/* 🔽 Sorting Dropdown */}
+      {/* Sorting Dropdown */}
       <div className="flex justify-center mb-6">
         <select
-          className="select select-bordered w-72"
+          className="select select-bordered w-72 bg-white shadow-sm rounded-lg focus:ring-2 focus:ring-indigo-500"
           value={sortOption}
           onChange={(e) => setSortOption(e.target.value)}
         >
@@ -82,51 +81,55 @@ const ManageAppliedApplication = () => {
         </select>
       </div>
 
-      <div className="overflow-x-auto rounded-lg shadow border border-gray-200 bg-white">
-        <table className="table table-zebra">
-          <thead className="bg-base-200">
+      {/* Table */}
+      <div className="overflow-x-auto bg-white rounded-xl shadow-lg border border-gray-200">
+        <table className="table-auto w-full text-left border-collapse">
+          <thead className="bg-indigo-50">
             <tr>
-              <th>#</th>
-              <th>University</th>
-              <th>User Email</th>
-              <th>Status</th>
-              <th className="text-center">Actions</th>
+              <th className="px-4 py-3">#</th>
+              <th className="px-4 py-3">University</th>
+              <th className="px-4 py-3">User Email</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3 text-center">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-100">
             {applications.map((app, index) => (
-              <tr key={app._id}>
-                <td>{index + 1}</td>
-                <td>{app.scholarshipInfo?.university || 'N/A'}</td>
-                <td>{app.userEmail || 'N/A'}</td>
-                <td>
-                  <span className={`badge ${
-                    app.status === 'pending' ? 'badge-warning' :
-                    app.status === 'processing' ? 'badge-info' :
-                    app.status === 'completed' ? 'badge-success' :
-                    app.status === 'rejected' ? 'badge-error' : ''
-                  }`}>
+              <tr
+                key={app._id}
+                className="hover:bg-gray-50 transition-colors duration-200"
+              >
+                <td className="px-4 py-3">{index + 1}</td>
+                <td className="px-4 py-3">{app.scholarshipInfo?.university || 'N/A'}</td>
+                <td className="px-4 py-3">{app.userEmail || 'N/A'}</td>
+                <td className="px-4 py-3">
+                  <span
+                    className={`badge ${
+                      app.status === 'pending' ? 'badge-warning' :
+                      app.status === 'processing' ? 'badge-info' :
+                      app.status === 'completed' ? 'badge-success' :
+                      app.status === 'rejected' ? 'badge-error' : ''
+                    }`}
+                  >
                     {app.status}
                   </span>
                 </td>
-                <td className="flex items-center gap-2 justify-center">
+                <td className="flex items-center justify-center gap-2 px-4 py-3">
                   <button
-                    className="btn btn-sm btn-outline btn-info"
+                    className="btn btn-sm btn-outline btn-info flex items-center gap-1"
                     onClick={() => setSelectedApp(app)}
                   >
                     <Eye className="w-4 h-4" /> Details
                   </button>
-
                   <button
-                    className="btn btn-sm btn-outline btn-warning"
+                    className="btn btn-sm btn-outline btn-warning flex items-center gap-1"
                     onClick={() => setSelectedApp(app)}
                   >
                     <MessageCircleMore className="w-4 h-4" /> Feedback
                   </button>
-
                   <button
                     onClick={() => handleCancel(app._id)}
-                    className="btn btn-sm btn-outline btn-error"
+                    className="btn btn-sm btn-outline btn-error flex items-center gap-1"
                     disabled={app.status === 'rejected'}
                     title={app.status === 'rejected' ? 'Already rejected' : 'Reject application'}
                   >
@@ -143,11 +146,13 @@ const ManageAppliedApplication = () => {
         )}
       </div>
 
-      {/* ✅ Modal with details */}
+      {/* Modal */}
       {selectedApp && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg space-y-4">
-            <h3 className="text-xl font-bold mb-2">Application Details</h3>
+        <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 space-y-4">
+            <h3 className="text-2xl font-semibold text-indigo-700 text-center">
+              Application Details
+            </h3>
 
             <img
               src={selectedApp.photo}
@@ -156,7 +161,7 @@ const ManageAppliedApplication = () => {
             />
 
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <p><strong>Name:</strong> {selectedApp.userEmail}</p>
+              <p><strong>Email:</strong> {selectedApp.userEmail}</p>
               <p><strong>Phone:</strong> {selectedApp.phone}</p>
               <p><strong>Degree:</strong> {selectedApp.degree}</p>
               <p><strong>Gender:</strong> {selectedApp.gender}</p>
@@ -172,28 +177,27 @@ const ManageAppliedApplication = () => {
               <p><strong>Status:</strong> {selectedApp.status}</p>
             </div>
 
-            {/* ✅ Feedback textarea */}
             <div>
               <label className="font-medium">Feedback:</label>
               <textarea
-                className="textarea textarea-bordered w-full mt-1"
+                className="textarea textarea-bordered w-full mt-1 rounded-lg focus:ring-2 focus:ring-indigo-500 border-none shadow-sm"
                 rows="3"
-                placeholder="Write feedback here..."
+                placeholder="Write feedback..."
                 value={feedbackText}
-                onChange={e => setFeedbackText(e.target.value)}
-              ></textarea>
+                onChange={(e) => setFeedbackText(e.target.value)}
+              />
             </div>
 
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-3 mt-2">
               <button
                 onClick={() => setSelectedApp(null)}
-                className="btn btn-sm btn-outline"
+                className="px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 transition"
               >
                 Close
               </button>
               <button
                 onClick={handleFeedbackSubmit}
-                className="btn btn-sm btn-primary"
+                className="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition"
               >
                 Submit Feedback
               </button>

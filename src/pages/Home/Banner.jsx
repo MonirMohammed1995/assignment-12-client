@@ -1,20 +1,15 @@
 import React from 'react';
 import { Carousel } from 'react-responsive-carousel';
 import { motion } from 'framer-motion';
-import img1 from '../../assets/banner/banner1.jpg';
-import img2 from '../../assets/banner/banner2.jpg';
-import img3 from '../../assets/banner/banner3.jpg';
-import img4 from '../../assets/banner/banner4.jpg';
-import img5 from '../../assets/banner/banner5.jpg';
 import { Link } from 'react-router-dom';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 
 const banners = [
-  { id: 1, title: "Global Scholarships for Everyone", desc: "Discover worldwide scholarship opportunities tailored for you.", img: img1 },
-  { id: 2, title: "Learn Without Limits", desc: "Apply for top scholarships and make your dream university a reality.", img: img2 },
-  { id: 3, title: "Career-Ready Education", desc: "Gain access to institutions that shape future leaders.", img: img3 },
-  { id: 4, title: "Study Abroad Made Easy", desc: "Find, apply, and track scholarships from across the globe.", img: img4 },
-  { id: 5, title: "Empower Your Future", desc: "Take the first step towards a brighter tomorrow with ScholarSys.", img: img5 },
+  { id: 1, title: "Global Scholarships for Everyone", desc: "Discover worldwide scholarship opportunities tailored for you.", img: "https://i.postimg.cc/wj3kBL4H/photo-1601742638130-f76cbe00ad01.avif" },
+  { id: 2, title: "Learn Without Limits", desc: "Apply for top scholarships and make your dream university a reality.", img: "https://i.postimg.cc/y6v9SWZN/photo-1617805784118-3c6a4b920c8d.avif" },
+  { id: 3, title: "Career-Ready Education", desc: "Gain access to institutions that shape future leaders.", img: "https://i.postimg.cc/ncXsj2xd/photo-1659080925666-16001612bc3e.avif" },
+  { id: 4, title: "Study Abroad Made Easy", desc: "Find, apply, and track scholarships from across the globe.", img: "https://i.postimg.cc/QdLMBr0t/photo-1619467416348-6a782839e95f.avif" },
+  { id: 5, title: "Empower Your Future", desc: "Take the first step towards a brighter tomorrow with ScholarSys.", img: "https://i.postimg.cc/rsBqtSGb/photo-1634252701528-769062298807.avif" },
 ];
 
 const Banner = () => {

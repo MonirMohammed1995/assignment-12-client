@@ -22,6 +22,7 @@ export const DashboardLink = ({ to, label }) => (
 export const UserSidebar = () => (
   <>
     <DashboardLink to="/dashboard/user" label="My Profile" />
+    <DashboardLink to="/" label="Home" />
     <DashboardLink to="/dashboard/user/my-applications" label="My Applications" />
     <DashboardLink to="/dashboard/user/my-reviews" label="My Reviews" />
   </>
@@ -31,6 +32,7 @@ export const UserSidebar = () => (
 export const AdminSidebar = () => (
   <>
     <DashboardLink to="/dashboard/admin" label="Admin Profile" />
+    <DashboardLink to="/" label="Home" />
     <DashboardLink to="/dashboard/admin/add-scholarship" label="Add Scholarship" />
     <DashboardLink to="/dashboard/admin/analytics-chart" label="Analytics Chart" />
     <DashboardLink to="/dashboard/admin/manage-users" label="Manage Users" />
@@ -44,6 +46,7 @@ export const AdminSidebar = () => (
 export const ModeratorSidebar = () => (
   <>
     <DashboardLink to="/dashboard/moderator" label="Moderator Profile" />
+    <DashboardLink to="/" label="Home" />
     <DashboardLink to="/dashboard/moderator/add-scholarship" label="Add Scholarship" />
     <DashboardLink to="/dashboard/moderator/manage-scholarship" label="Manage Scholarships" />
     <DashboardLink to="/dashboard/moderator/all-reviews" label="All Reviews" />

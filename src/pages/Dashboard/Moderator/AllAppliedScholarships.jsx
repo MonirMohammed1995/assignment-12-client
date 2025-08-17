@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { Trash2 } from 'lucide-react'; // Ensure this is installed or remove if unused
+import { Trash2, Info, MessageSquare } from 'lucide-react';
 
 const AllAppliedScholarships = () => {
   const [applications, setApplications] = useState([]);
@@ -84,31 +84,31 @@ const AllAppliedScholarships = () => {
   };
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6">All Applied Scholarships</h2>
+    <div className="p-6 max-w-7xl mx-auto">
+      <h2 className="text-3xl font-bold mb-6 text-center text-indigo-700">All Applied Scholarships</h2>
 
-      <div className="overflow-x-auto border rounded-lg shadow bg-white">
-        <table className="table w-full">
-          <thead className="bg-base-200 text-sm text-gray-700">
+      <div className="overflow-x-auto rounded-xl shadow-lg bg-white">
+        <table className="table w-full text-sm">
+          <thead className="bg-indigo-100 text-indigo-700">
             <tr>
-              <th>University</th>
-              <th>Degree</th>
-              <th>Type</th>
-              <th>Email</th>
-              <th>Status</th>
-              <th className="text-center">Actions</th>
+              <th className="p-3">University</th>
+              <th className="p-3">Degree</th>
+              <th className="p-3">Type</th>
+              <th className="p-3">Email</th>
+              <th className="p-3">Status</th>
+              <th className="p-3 text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
             {applications.map((app) => (
-              <tr key={app._id}>
-                <td>{app.scholarshipInfo?.university || 'N/A'}</td>
-                <td>{app.degree || 'N/A'}</td>
-                <td>{app.scholarshipInfo?.category || 'N/A'}</td>
-                <td>{app.userEmail || 'N/A'}</td>
-                <td>
+              <tr key={app._id} className="hover:bg-indigo-50 transition">
+                <td className="p-2">{app.scholarshipInfo?.university || 'N/A'}</td>
+                <td className="p-2">{app.degree || 'N/A'}</td>
+                <td className="p-2">{app.scholarshipInfo?.category || 'N/A'}</td>
+                <td className="p-2 break-words">{app.userEmail || 'N/A'}</td>
+                <td className="p-2">
                   <span
-                    className={`badge text-white ${
+                    className={`badge text-white px-3 py-1 rounded-full ${
                       app.status === 'pending'
                         ? 'bg-yellow-500'
                         : app.status === 'processing'
@@ -121,28 +121,24 @@ const AllAppliedScholarships = () => {
                     {app.status}
                   </span>
                 </td>
-                <td className="flex flex-wrap justify-center gap-2">
+                <td className="p-2 flex flex-wrap justify-center gap-2">
                   <button
                     onClick={() => openModal(app, 'details')}
-                    className="btn btn-sm btn-outline btn-info"
+                    className="btn btn-sm btn-outline btn-info flex items-center gap-1 hover:scale-105 transition"
                   >
-                    Details
+                    <Info className="w-4 h-4" /> Details
                   </button>
                   <button
                     onClick={() => openModal(app, 'feedback')}
-                    className="btn btn-sm btn-outline btn-warning"
+                    className="btn btn-sm btn-outline btn-warning flex items-center gap-1 hover:scale-105 transition"
                   >
-                    Feedback
+                    <MessageSquare className="w-4 h-4" /> Feedback
                   </button>
                   <button
                     onClick={() => handleCancel(app._id)}
-                    className="btn btn-sm btn-outline btn-error"
+                    className="btn btn-sm btn-outline btn-error flex items-center gap-1 hover:scale-105 transition"
                     disabled={app.status === 'rejected'}
-                    title={
-                      app.status === 'rejected'
-                        ? 'Already rejected'
-                        : 'Reject application'
-                    }
+                    title={app.status === 'rejected' ? 'Already rejected' : 'Reject application'}
                   >
                     <Trash2 className="w-4 h-4" /> Cancel
                   </button>
@@ -162,30 +158,17 @@ const AllAppliedScholarships = () => {
       {/* Details Modal */}
       {selectedApp && modalType === 'details' && (
         <dialog open className="modal modal-open">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg mb-4">Application Details</h3>
-            <div className="space-y-2 text-sm">
-              <p>
-                <strong>University:</strong>{' '}
-                {selectedApp.scholarshipInfo?.university}
-              </p>
-              <p>
-                <strong>Degree:</strong> {selectedApp.degree}
-              </p>
-              <p>
-                <strong>Type:</strong> {selectedApp.scholarshipInfo?.category}
-              </p>
-              <p>
-                <strong>Email:</strong> {selectedApp.userEmail}
-              </p>
-              <p>
-                <strong>Status:</strong> {selectedApp.status}
-              </p>
+          <div className="modal-box rounded-xl p-6">
+            <h3 className="font-bold text-xl mb-4 text-indigo-700">Application Details</h3>
+            <div className="space-y-2 text-sm text-gray-700">
+              <p><strong>University:</strong> {selectedApp.scholarshipInfo?.university}</p>
+              <p><strong>Degree:</strong> {selectedApp.degree}</p>
+              <p><strong>Type:</strong> {selectedApp.scholarshipInfo?.category}</p>
+              <p><strong>Email:</strong> {selectedApp.userEmail}</p>
+              <p><strong>Status:</strong> {selectedApp.status}</p>
             </div>
             <div className="modal-action mt-4">
-              <button className="btn" onClick={closeModal}>
-                Close
-              </button>
+              <button className="btn btn-primary" onClick={closeModal}>Close</button>
             </div>
           </div>
         </dialog>
@@ -194,25 +177,23 @@ const AllAppliedScholarships = () => {
       {/* Feedback Modal */}
       {selectedApp && modalType === 'feedback' && (
         <dialog open className="modal modal-open">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg mb-4">Send Feedback</h3>
+          <div className="modal-box rounded-xl p-6">
+            <h3 className="font-bold text-xl mb-4 text-indigo-700">Send Feedback</h3>
             <textarea
-              className="textarea textarea-bordered w-full mt-1"
-              rows="3"
+              className="textarea textarea-bordered w-full mt-1 focus:ring-2 focus:ring-indigo-500 transition"
+              rows="4"
               placeholder="Write feedback here..."
               value={feedbackText}
               onChange={(e) => setFeedbackText(e.target.value)}
             ></textarea>
-            <div className="modal-action mt-4">
+            <div className="modal-action mt-4 flex gap-3">
               <button
                 onClick={handleFeedbackSubmit}
-                className="btn btn-sm btn-primary"
+                className="btn btn-success hover:scale-105 transition"
               >
                 Submit Feedback
               </button>
-              <button className="btn" onClick={closeModal}>
-                Cancel
-              </button>
+              <button className="btn btn-outline" onClick={closeModal}>Cancel</button>
             </div>
           </div>
         </dialog>

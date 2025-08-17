@@ -3,72 +3,98 @@ import Swal from 'sweetalert2';
 import { Trash2 } from 'lucide-react';
 
 const AllReviews = () => {
-    const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const api = import.meta.env.VITE_API_URL;
 
-    useEffect(() => {
-        const api=import.meta.env.VITE_API_URL;
-        fetch(`${api}/reviews`)
-            .then(res => res.json())
-            .then(data => setReviews(data));
-    }, []);
+  useEffect(() => {
+    fetch(`${api}/reviews`)
+      .then(res => res.json())
+      .then(data => setReviews(data))
+      .catch(err => console.error(err));
+  }, [api]);
 
-    const handleDelete = async (id) => {
-        const confirm = await Swal.fire({
-            title: 'Are you sure?',
-            text: 'This action cannot be undone!',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete it!'
+  const handleDelete = async (id) => {
+    const confirm = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This action cannot be undone!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      confirmButtonColor: '#dc2626',
+    });
+
+    if (confirm.isConfirmed) {
+      fetch(`${api}/reviews/${id}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.deletedCount > 0) {
+            Swal.fire('Deleted!', 'The review has been deleted.', 'success');
+            setReviews(prev => prev.filter(review => review._id !== id));
+          }
         });
+    }
+  };
 
-        if (confirm.isConfirmed) {
-            const api=import.meta.env.VITE_API_URL;
-            fetch(`${api}/reviews/${id}`, {
-                method: 'DELETE'
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.deletedCount > 0) {
-                        Swal.fire('Deleted!', 'The review has been deleted.', 'success');
-                        setReviews(reviews.filter(review => review._id !== id));
-                    }
-                });
-        }
-    };
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      <h2 className="text-3xl font-bold mb-6 text-indigo-700 text-center">All Reviews</h2>
 
-    return (
-        <div className="p-4">
-            <h2 className="text-2xl font-bold mb-4">All Reviews</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {reviews.map(review => (
-                    <div key={review._id} className="p-4 shadow-md rounded-xl">
-                        <h3 className="text-lg font-semibold">{review.universityName}</h3>
-                        {/* <p className="text-sm text-gray-600">Subject: {review.subjectCategory}</p> */}
-                        <div className="flex items-center gap-3 mt-2">
-                            <img
-                                src={review.reviewerImage}
-                                alt={review.reviewerName}
-                                className="w-10 h-10 rounded-full border"
-                            />
-                            <div>
-                                <p className="font-medium">{review.reviewerName}</p>
-                                <p className="text-xs text-gray-500">{review.reviewDate}</p>
-                            </div>
-                        </div>
-                        <p className="mt-2 text-sm">Rating: <span className="font-bold">{review.rating}</span></p>
-                        <p className="text-gray-700 text-sm mt-2">{review.comments}</p>
-                        <button
-                            onClick={() => handleDelete(review._id)}
-                            variant="destructive"
-                            className="mt-4 w-full flex items-center justify-center gap-2"
-                        >
-                            <Trash2 size={16} /> Delete Review
-                        </button>
+      <div className="overflow-x-auto rounded-lg shadow-lg bg-white">
+        <table className="min-w-full divide-y divide-gray-200 text-sm">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-4 py-3 text-left">University</th>
+              <th className="px-4 py-3 text-left">Reviewer</th>
+              <th className="px-4 py-3 text-left">Rating</th>
+              <th className="px-4 py-3 text-left">Comments</th>
+              <th className="px-4 py-3 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {reviews.length > 0 ? (
+              reviews.map(review => (
+                <tr key={review._id} className="hover:bg-indigo-50 transition">
+                  <td className="px-4 py-2 font-medium">{review.universityName}</td>
+                  <td className="px-4 py-2 flex items-center gap-3">
+                    <img
+                      src={review.reviewerImage || 'https://via.placeholder.com/40'}
+                      alt={review.reviewerName}
+                      className="w-8 h-8 rounded-full border"
+                    />
+                    <div>
+                      <p className="font-medium">{review.reviewerName}</p>
+                      <p className="text-xs text-gray-500">{review.reviewDate}</p>
                     </div>
-                ))}
-            </div>
-        </div>
-    );
+                  </td>
+                  <td className="px-4 py-2">
+                    <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                      {review.rating} ★
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 text-gray-700">{review.comment}</td>
+                  <td className="px-4 py-2 text-center">
+                    <button
+                      onClick={() => handleDelete(review._id)}
+                      className="flex items-center justify-center gap-2 text-red-600 hover:text-red-800 transition px-3 py-1 rounded-md border border-red-200 hover:bg-red-50"
+                      title="Delete Review"
+                    >
+                      <Trash2 size={16} /> Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={5} className="px-4 py-6 text-center text-gray-500">
+                  No reviews found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 };
 
 export default AllReviews;

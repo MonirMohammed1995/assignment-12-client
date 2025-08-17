@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { FaEdit, FaEye, FaTrash } from 'react-icons/fa';
-import Swal from 'sweetalert2';
+import React, { useEffect, useState } from "react";
+import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 const ManageScholarship = () => {
   const [scholarships, setScholarships] = useState([]);
@@ -8,92 +8,101 @@ const ManageScholarship = () => {
   const [editData, setEditData] = useState({});
   const api = import.meta.env.VITE_API_URL;
 
-  // Fetch all scholarships
   useEffect(() => {
     fetch(`${api}/scholarships`)
-      .then(res => res.json())
-      .then(data => setScholarships(data))
-      .catch(err => console.error('Failed to fetch scholarships:', err));
+      .then((res) => res.json())
+      .then((data) => setScholarships(data))
+      .catch((err) => console.error("Failed to fetch scholarships:", err));
   }, [api]);
 
-  // Delete scholarship
   const handleDelete = (id) => {
     Swal.fire({
-      title: 'Are you sure?',
-      text: 'You will not be able to recover this scholarship!',
-      icon: 'warning',
+      title: "Are you sure?",
+      text: "This action cannot be undone!",
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, delete it!',
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
     }).then((result) => {
       if (result.isConfirmed) {
-        fetch(`${api}/scholarships/${id}`, {
-          method: 'DELETE',
-        })
-          .then(res => res.json())
+        fetch(`${api}/scholarships/${id}`, { method: "DELETE" })
+          .then((res) => res.json())
           .then(() => {
-            Swal.fire('Deleted!', 'Scholarship has been deleted.', 'success');
-            setScholarships(prev => prev.filter(item => item._id !== id));
+            Swal.fire("Deleted!", "Scholarship deleted successfully.", "success");
+            setScholarships((prev) => prev.filter((s) => s._id !== id));
           });
       }
     });
   };
 
-  // Update scholarship
   const handleUpdate = () => {
     fetch(`${api}/scholarships/${editData._id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(editData),
     })
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(() => {
-        Swal.fire('Updated!', 'Scholarship updated successfully.', 'success');
+        Swal.fire("Updated!", "Scholarship updated successfully.", "success");
         setSelected(null);
         setEditData({});
         fetch(`${api}/scholarships`)
-          .then(res => res.json())
-          .then(data => setScholarships(data));
+          .then((res) => res.json())
+          .then((data) => setScholarships(data));
       });
   };
 
   return (
-    <div className="p-4 md:p-6">
-      <h2 className="text-2xl font-bold mb-6">Manage Scholarships (Admin)</h2>
+    <div className="p-6 md:p-8 max-w-6xl mx-auto">
+      <h2 className="text-3xl font-bold text-indigo-700 mb-6 text-center">
+        Manage Scholarships
+      </h2>
 
-      <div className="overflow-x-auto shadow border rounded-lg">
-        <table className="table w-full text-sm">
-          <thead className="bg-gray-100">
+      <div className="overflow-x-auto rounded-xl shadow-lg border border-gray-200">
+        <table className="table-auto w-full text-left border-collapse">
+          <thead className="bg-indigo-50">
             <tr>
-              <th className="p-3 text-left">Scholarship</th>
-              <th className="p-3 text-left">University</th>
-              <th className="p-3 text-left">Degree</th>
-              <th className="p-3 text-left">Fee</th>
-              <th className="p-3 text-left">Actions</th>
+              <th className="px-4 py-3">Scholarship</th>
+              <th className="px-4 py-3">University</th>
+              <th className="px-4 py-3">Degree</th>
+              <th className="px-4 py-3">Fee</th>
+              <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            {scholarships.map((scholarship) => (
-              <tr key={scholarship._id} className="border-t">
-                <td className="p-3">{scholarship.scholarshipName}</td>
-                <td className="p-3">{scholarship.universityName}</td>
-                <td className="p-3">{scholarship.degree}</td>
-                <td className="p-3">${scholarship.applicationFees}</td>
-                <td className="p-3 flex items-center gap-3">
-                  <button onClick={() => setSelected(scholarship)} className="text-blue-600 hover:text-blue-800">
+          <tbody className="divide-y divide-gray-100">
+            {scholarships.map((sch) => (
+              <tr
+                key={sch._id}
+                className="hover:bg-gray-50 transition-colors duration-200"
+              >
+                <td className="px-4 py-3">{sch.scholarshipName}</td>
+                <td className="px-4 py-3">{sch.universityName}</td>
+                <td className="px-4 py-3">{sch.degree}</td>
+                <td className="px-4 py-3">${sch.applicationFees}</td>
+                <td className="px-4 py-3 flex gap-3">
+                  <button
+                    onClick={() => setSelected(sch)}
+                    className="text-blue-600 hover:text-blue-800 transition"
+                    title="View Details"
+                  >
                     <FaEye />
                   </button>
                   <button
                     onClick={() => {
-                      setEditData(scholarship);
-                      setSelected('edit');
+                      setEditData(sch);
+                      setSelected("edit");
                     }}
-                    className="text-yellow-600 hover:text-yellow-800"
+                    className="text-yellow-600 hover:text-yellow-800 transition"
+                    title="Edit Scholarship"
                   >
                     <FaEdit />
                   </button>
-                  <button onClick={() => handleDelete(scholarship._id)} className="text-red-600 hover:text-red-800">
+                  <button
+                    onClick={() => handleDelete(sch._id)}
+                    className="text-red-600 hover:text-red-800 transition"
+                    title="Delete Scholarship"
+                  >
                     <FaTrash />
                   </button>
                 </td>
@@ -103,47 +112,55 @@ const ManageScholarship = () => {
         </table>
       </div>
 
-      {/* View Modal */}
-      {selected && selected !== 'edit' && (
-        <div className="fixed inset-0 hero hero-overlay flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg">
-            <h3 className="text-xl font-semibold mb-4">Scholarship Details</h3>
-            <p><strong>Name:</strong> {selected.scholarshipName}</p>
+      {/* ===== View Modal ===== */}
+      {selected && selected !== "edit" && (
+        <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <h3 className="text-2xl font-semibold mb-4">{selected.scholarshipName}</h3>
             <p><strong>University:</strong> {selected.universityName}</p>
             <p><strong>Degree:</strong> {selected.degree}</p>
             <p><strong>Category:</strong> {selected.scholarshipCategory}</p>
-            <p><strong>Deadline:</strong> {selected.deadline}</p>
             <p><strong>Subject:</strong> {selected.subjectCategory}</p>
-            <button
-              onClick={() => setSelected(null)}
-              className="mt-4 px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
-            >
-              Close
-            </button>
+            <p><strong>Deadline:</strong> {selected.deadline}</p>
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setSelected(null)}
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl transition"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Edit Modal */}
-      {selected === 'edit' && (
-        <div className="fixed inset-0 hero hero-overlay flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg">
-            <h3 className="text-xl font-semibold mb-4">Edit Scholarship</h3>
+      {/* ===== Edit Modal ===== */}
+      {selected === "edit" && (
+        <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <h3 className="text-2xl font-semibold mb-4">Edit Scholarship</h3>
+
             <input
-              className="input input-bordered w-full mb-3"
-              value={editData.scholarshipName || ''}
-              onChange={(e) => setEditData({ ...editData, scholarshipName: e.target.value })}
+              type="text"
+              className="w-full mb-3 input input-lg rounded-xl bg-gray-100 focus:bg-white focus:ring-2 focus:ring-indigo-500 border-none shadow-sm"
               placeholder="Scholarship Name"
+              value={editData.scholarshipName || ""}
+              onChange={(e) =>
+                setEditData({ ...editData, scholarshipName: e.target.value })
+              }
             />
             <input
-              className="input input-bordered w-full mb-3"
-              value={editData.universityName || ''}
-              onChange={(e) => setEditData({ ...editData, universityName: e.target.value })}
+              type="text"
+              className="w-full mb-3 input input-lg rounded-xl bg-gray-100 focus:bg-white focus:ring-2 focus:ring-indigo-500 border-none shadow-sm"
               placeholder="University Name"
+              value={editData.universityName || ""}
+              onChange={(e) =>
+                setEditData({ ...editData, universityName: e.target.value })
+              }
             />
             <select
-              className="input input-bordered w-full mb-3"
-              value={editData.degree || ''}
+              className="w-full mb-3 input input-lg rounded-xl bg-gray-100 focus:bg-white focus:ring-2 focus:ring-indigo-500 border-none shadow-sm"
+              value={editData.degree || ""}
               onChange={(e) => setEditData({ ...editData, degree: e.target.value })}
             >
               <option value="">Select Degree</option>
@@ -152,15 +169,28 @@ const ManageScholarship = () => {
               <option value="Masters">Masters</option>
             </select>
             <input
-              className="input input-bordered w-full mb-3"
-              value={editData.applicationFees || ''}
-              onChange={(e) => setEditData({ ...editData, applicationFees: e.target.value })}
-              placeholder="Application Fee"
               type="number"
+              className="w-full mb-3 input input-lg rounded-xl bg-gray-100 focus:bg-white focus:ring-2 focus:ring-indigo-500 border-none shadow-sm"
+              placeholder="Application Fee"
+              value={editData.applicationFees || ""}
+              onChange={(e) =>
+                setEditData({ ...editData, applicationFees: e.target.value })
+              }
             />
-            <div className="flex justify-end gap-2">
-              <button onClick={handleUpdate} className="btn btn-primary">Update</button>
-              <button onClick={() => setSelected(null)} className="btn btn-secondary">Cancel</button>
+
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                onClick={handleUpdate}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow"
+              >
+                Update
+              </button>
+              <button
+                onClick={() => setSelected(null)}
+                className="px-4 py-2 bg-gray-200 rounded-xl hover:bg-gray-300 transition"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>

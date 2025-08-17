@@ -38,7 +38,6 @@ const MyApplications = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: 'rejected' }),
         });
-
         const data = await res.json();
         if (data.modifiedCount > 0) {
           Swal.fire('Cancelled!', 'Your application has been cancelled.', 'success');
@@ -64,7 +63,6 @@ const MyApplications = () => {
     }
 
     setIsSubmittingReview(true);
-
     const application = applications.find(app => app._id === reviewModal);
     const reviewData = {
       scholarshipId: application.scholarshipId,
@@ -83,7 +81,6 @@ const MyApplications = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reviewData),
       });
-
       const data = await res.json();
       if (data.insertedId) {
         Swal.fire('Success', 'Review submitted!', 'success');
@@ -99,68 +96,67 @@ const MyApplications = () => {
     }
   };
 
-  if (loading) return <div className="text-center py-10">Loading...</div>;
-  if (!applications.length) return <div className="text-center py-10">No applications found.</div>;
+  if (loading) return <div className="text-center py-10 text-lg font-medium">Loading...</div>;
+  if (!applications.length) return <div className="text-center py-10 text-lg text-gray-500">No applications found.</div>;
 
   return (
-    <div className="overflow-x-auto mt-5 mb-16">
-      <h2 className="text-2xl font-semibold mb-4 text-center">My Applications</h2>
-      <table className="table w-full">
-        <thead>
-          <tr className="bg-base-200 text-base text-center">
-            <th>#</th>
-            <th>University</th>
-            <th>Subject</th>
-            <th>Degree</th>
-            <th>Fee</th>
-            <th>Status</th>
-            <th>Applied</th>
-            <th className="text-center">Actions</th>
+    <div className="overflow-x-auto mt-8 mb-16 px-4">
+      <h2 className="text-3xl font-bold mb-6 text-center text-indigo-700">My Applications</h2>
+
+      <table className="table-auto w-full border-collapse bg-white shadow-md rounded-xl overflow-hidden">
+        <thead className="bg-indigo-50 text-sm uppercase text-gray-600">
+          <tr>
+            <th className="px-4 py-3">#</th>
+            <th className="px-4 py-3">University</th>
+            <th className="px-4 py-3">Subject</th>
+            <th className="px-4 py-3">Degree</th>
+            <th className="px-4 py-3">Fee</th>
+            <th className="px-4 py-3">Status</th>
+            <th className="px-4 py-3">Applied</th>
+            <th className="px-4 py-3">Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="text-sm text-gray-700">
           {applications.map((app, i) => (
-            <tr key={app._id} className="text-center">
-              <td>{i + 1}</td>
-              <td>{app.scholarshipInfo?.university || 'N/A'}</td>
-              <td>{app.scholarshipInfo?.subject || 'N/A'}</td>
-              <td>{app.degree}</td>
-              <td>${app.applicationFees || '0'}</td>
-              <td>
+            <tr key={app._id} className="border-b hover:bg-gray-50 transition-colors">
+              <td className="px-4 py-3">{i + 1}</td>
+              <td className="px-4 py-3">{app.scholarshipInfo?.university || 'N/A'}</td>
+              <td className="px-4 py-3">{app.scholarshipInfo?.subject || 'N/A'}</td>
+              <td className="px-4 py-3">{app.degree}</td>
+              <td className="px-4 py-3">${app.applicationFees || '0'}</td>
+              <td className="px-4 py-3">
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-semibold ${
                     app.status === 'pending'
-                      ? 'bg-yellow-200 text-yellow-800'
+                      ? 'bg-yellow-100 text-yellow-800'
                       : app.status === 'processing'
-                      ? 'bg-blue-200 text-blue-800'
+                      ? 'bg-blue-100 text-blue-800'
                       : app.status === 'completed'
-                      ? 'bg-green-200 text-green-800'
-                      : 'bg-red-200 text-red-800'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
                   }`}
                 >
                   {app.status}
                 </span>
               </td>
-              <td>
-                {app.createdAt ? format(new Date(app.createdAt), 'PPP') : 'N/A'}
-              </td>
-              <td className="flex flex-col sm:flex-row gap-2 justify-center">
+              <td className="px-4 py-3">{app.createdAt ? format(new Date(app.createdAt), 'PPP') : 'N/A'}</td>
+              <td className="px-4 py-3 flex flex-col sm:flex-row gap-2 justify-center">
                 <button
                   onClick={() => handleEdit(app.status, app._id)}
-                  className="btn btn-sm btn-warning"
+                  className="btn btn-sm bg-yellow-500 hover:bg-yellow-600 text-white"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => handleCancel(app._id)}
-                  className="btn btn-sm btn-error"
+                  className="btn btn-sm bg-red-500 hover:bg-red-600 text-white"
                 >
                   Cancel
                 </button>
                 {app.status === 'completed' && (
                   <button
                     onClick={() => setReviewModal(app._id)}
-                    className="btn btn-sm btn-primary"
+                    className="btn btn-sm bg-indigo-600 hover:bg-indigo-700 text-white"
                   >
                     Review
                   </button>
@@ -173,40 +169,40 @@ const MyApplications = () => {
 
       {/* Review Modal */}
       {reviewModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-md w-full relative">
-            <h3 className="text-lg font-semibold mb-2">Submit Review</h3>
-            <label className="label">
-              <span className="label-text">Rating (1 to 5)</span>
-            </label>
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl">
+            <h3 className="text-xl font-bold mb-4 text-indigo-700">Submit Review</h3>
+
+            <label className="block font-medium mb-1">Rating (1 to 5)</label>
             <input
               type="number"
-              className="input input-bordered w-full"
+              className="input input-bordered w-full mb-3"
               value={rating}
               onChange={(e) => setRating(Number(e.target.value))}
               min={1}
               max={5}
             />
-            <label className="label mt-2">
-              <span className="label-text">Comment</span>
-            </label>
+
+            <label className="block font-medium mb-1">Comment</label>
             <textarea
-              className="textarea textarea-bordered w-full"
-              rows={3}
+              className="textarea textarea-bordered w-full mb-4"
+              rows={4}
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
+              placeholder="Write your review..."
             ></textarea>
-            <div className="flex justify-end mt-4 space-x-2">
+
+            <div className="flex justify-end gap-2">
               <button
                 onClick={() => setReviewModal(null)}
-                className="btn btn-sm"
+                className="btn btn-sm btn-outline"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmitReview}
                 disabled={isSubmittingReview}
-                className="btn btn-sm btn-primary"
+                className="btn btn-sm bg-indigo-600 hover:bg-indigo-700 text-white"
               >
                 {isSubmittingReview ? 'Submitting...' : 'Submit'}
               </button>

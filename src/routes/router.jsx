@@ -111,7 +111,9 @@ export const router = createBrowserRouter([
       { path: '/unauthorized', element: <Unauthorized /> },
 
       // Dashboard Layout with Role-Based Nested Routes
-      {
+    ],
+  },
+  {
         path: 'dashboard',
         element: (
           <PrivateRoute>
@@ -172,7 +174,5 @@ export const router = createBrowserRouter([
             ],
           },
         ],
-      },
-    ],
-  },
+      }
 ]);
