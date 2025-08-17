@@ -4,72 +4,97 @@ import { AuthContext } from '../../../context/AuthProvider';
 import { FaTrashAlt } from 'react-icons/fa';
 
 const ManageUsers = () => {
-  const { token, user, role } = useContext(AuthContext);
+  const { token, user } = useContext(AuthContext);
   const [users, setUsers] = useState([]);
   const [filterRole, setFilterRole] = useState('all');
+  const [loading, setLoading] = useState(true);
 
+  // Fetch all users
   useEffect(() => {
-    if (!token || role !== 'admin') return;
+    if (!token) return;
 
-    fetch(`${import.meta.env.VITE_API_URL}/users`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => setUsers(data))
-      .catch((err) => console.error(err));
-  }, [token, role]);
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/users`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error('Failed to fetch users');
+        const data = await res.json();
+        setUsers(data);
+      } catch (err) {
+        console.error('Error fetching users:', err);
+        Swal.fire('Error', 'Failed to fetch users', 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleRoleChange = (userId, newRole, currentRole) => {
+    fetchUsers();
+  }, [token]);
+
+  // Update user role
+  const handleRoleChange = async (userId, newRole, currentRole) => {
     if (newRole === currentRole) return;
 
-    fetch(`${import.meta.env.VITE_API_URL}/users/${userId}/role`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ role: newRole }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.modifiedCount > 0) {
-          Swal.fire('Success', 'User role updated!', 'success');
-          setUsers((prev) =>
-            prev.map((u) => (u._id === userId ? { ...u, role: newRole } : u))
-          );
-        }
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/${userId}/role`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ role: newRole }),
       });
+
+      const data = await res.json();
+      if (data.modifiedCount > 0) {
+        Swal.fire('Success', 'User role updated!', 'success');
+        setUsers((prev) =>
+          prev.map((u) => (u._id === userId ? { ...u, role: newRole } : u))
+        );
+      }
+    } catch (err) {
+      console.error('Error updating role:', err);
+      Swal.fire('Error', 'Failed to update role', 'error');
+    }
   };
 
-  const handleDelete = (userId, email) => {
+  // Delete user
+  const handleDelete = async (userId, email) => {
     if (email === user?.email) {
       return Swal.fire('Warning', 'You cannot delete yourself.', 'warning');
     }
 
-    Swal.fire({
+    const result = await Swal.fire({
       title: 'Are you sure?',
       text: 'This user will be permanently deleted.',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
       confirmButtonText: 'Delete',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        fetch(`${import.meta.env.VITE_API_URL}/users/${userId}`, {
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/users/${userId}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` },
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.deletedCount > 0) {
-              Swal.fire('Deleted!', 'User has been deleted.', 'success');
-              setUsers((prev) => prev.filter((u) => u._id !== userId));
-            }
-          });
+        });
+
+        const data = await res.json();
+        if (data.deletedCount > 0) {
+          Swal.fire('Deleted!', 'User has been deleted.', 'success');
+          setUsers((prev) => prev.filter((u) => u._id !== userId));
+        }
+      } catch (err) {
+        console.error('Error deleting user:', err);
+        Swal.fire('Error', 'Failed to delete user', 'error');
       }
-    });
+    }
   };
 
+  // Filtered users
   const filteredUsers = useMemo(() => {
     if (filterRole === 'all') return users;
     return users.filter((u) => u.role === filterRole);
@@ -107,7 +132,13 @@ const ManageUsers = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {filteredUsers.length > 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan="5" className="text-center py-6 text-gray-500">
+                  Loading users...
+                </td>
+              </tr>
+            ) : filteredUsers.length > 0 ? (
               filteredUsers.map((u, index) => (
                 <tr key={u._id} className="hover:bg-gray-50 transition">
                   <td className="px-6 py-4 text-sm text-gray-600">{index + 1}</td>

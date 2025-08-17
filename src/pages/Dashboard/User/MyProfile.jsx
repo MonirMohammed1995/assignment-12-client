@@ -48,7 +48,11 @@ const MyProfile = () => {
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm text-gray-700">
         <div className="flex flex-col">
           <span className="font-medium text-gray-800">Joined</span>
-          <span>01 Jan 2024</span>
+          <p className="text-sm">
+               {user?.metadata?.creationTime
+                ? new Date(user.metadata.creationTime).toLocaleDateString()
+                : 'N/A'}
+            </p>
         </div>
         <div className="flex flex-col">
           <span className="font-medium text-gray-800">Status</span>
