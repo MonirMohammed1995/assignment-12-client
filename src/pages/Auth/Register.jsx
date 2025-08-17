@@ -3,7 +3,6 @@ import { FaEnvelope, FaLock, FaUser, FaGoogle, FaImage } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import { useNavigate, Link } from 'react-router-dom';
 import { uploadImageToImgbb } from '../../utils/uploadImageToImgbb';
-
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -18,63 +17,34 @@ const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
 const Register = () => {
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'user',
-  });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'user' });
   const [image, setImage] = useState(null);
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const api = import.meta.env.VITE_API_URL;
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const saveUserToDB = async (name, email, role, imageUrl) => {
     const newUser = { name, email, role, image: imageUrl };
-
-    await fetch(`${api}/users/${email}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newUser),
-    });
-
-    const tokenRes = await fetch(`${api}/jwt`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
+    await fetch(`${api}/users/${email}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newUser) });
+    const tokenRes = await fetch(`${api}/jwt`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
     const { token } = await tokenRes.json();
     localStorage.setItem('access-token', token);
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (!image) {
-      return Swal.fire('Error', 'Please upload a profile image!', 'error');
-    }
-
+    if (!image) return Swal.fire('Error', 'Please upload a profile image!', 'error');
     setLoading(true);
+
     try {
       const imageUrl = await uploadImageToImgbb(image);
-
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        form.email,
-        form.password
-      );
-
-      await updateProfile(userCredential.user, {
-        displayName: form.name,
-        photoURL: imageUrl,
-      });
-
+      const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password);
+      await updateProfile(userCredential.user, { displayName: form.name, photoURL: imageUrl });
       await saveUserToDB(form.name, form.email, form.role, imageUrl);
       Swal.fire('Success!', 'Account created successfully', 'success');
-
       navigate(`/dashboard/${form.role}`);
     } catch (err) {
       Swal.fire('Registration Failed', err.message, 'error');
@@ -88,13 +58,9 @@ const Register = () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
-
-      const imageUrl =
-        user.photoURL || 'https://i.ibb.co/Y3bFBLT/default-user.png';
-
+      const imageUrl = user.photoURL || 'https://i.ibb.co/Y3bFBLT/default-user.png';
       await saveUserToDB(user.displayName, user.email, 'user', imageUrl);
       Swal.fire('Success!', 'Logged in with Google', 'success');
-
       navigate('/dashboard/user');
     } catch (err) {
       Swal.fire('Google Login Failed', err.message, 'error');
@@ -104,14 +70,13 @@ const Register = () => {
   };
 
   return (
-    <div className="p-4 min-h-[calc(100vh-80px)] bg-gradient-to-r from-indigo-100 to-blue-200 flex items-center justify-center">
+    <div className="min-h-[100vh] flex items-center justify-center bg-gradient-to-r from-indigo-100 to-blue-200 p-4">
       <Helmet><title>Register</title></Helmet>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-10">
-        <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-8">
-          Create Account
-        </h2>
 
-        <form onSubmit={handleRegister} className="space-y-4 text-gray-700">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-10">
+        <h2 className="text-3xl font-extrabold text-gray-800 text-center mb-8">Create Account</h2>
+
+        <form onSubmit={handleRegister} className="space-y-5 text-gray-700">
           {/* Name */}
           <div className="relative">
             <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -122,7 +87,7 @@ const Register = () => {
               value={form.name}
               onChange={handleChange}
               required
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             />
           </div>
 
@@ -136,7 +101,7 @@ const Register = () => {
               value={form.email}
               onChange={handleChange}
               required
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             />
           </div>
 
@@ -150,12 +115,12 @@ const Register = () => {
               value={form.password}
               onChange={handleChange}
               required
-              className="w-full pl-10 pr-20 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-10 pr-20 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             />
             <button
               type="button"
               onClick={() => setShowPass(!showPass)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-600 font-medium"
               tabIndex={-1}
             >
               {showPass ? 'Hide' : 'Show'}
@@ -170,7 +135,7 @@ const Register = () => {
               accept="image/*"
               required
               onChange={(e) => setImage(e.target.files[0])}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 transition"
             />
           </div>
 
@@ -178,7 +143,7 @@ const Register = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-500 text-white font-semibold py-3 rounded-xl hover:bg-blue-600 transition disabled:opacity-60"
+            className="w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl shadow-md hover:bg-indigo-700 transition disabled:opacity-60"
           >
             {loading ? 'Creating account...' : 'Register'}
           </button>
@@ -186,9 +151,9 @@ const Register = () => {
 
         {/* Divider */}
         <div className="flex items-center my-6">
-          <span className="h-px flex-1 bg-gray-300" />
+          <span className="flex-grow h-px bg-gray-300" />
           <span className="px-4 text-sm text-gray-500">or</span>
-          <span className="h-px flex-1 bg-gray-300" />
+          <span className="flex-grow h-px bg-gray-300" />
         </div>
 
         {/* Google Sign In */}
